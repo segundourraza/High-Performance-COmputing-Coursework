@@ -23,11 +23,27 @@ int main(int argc, char** argv)
     double dx = 1.;
     double dy = 1.; 
     
-    std::cout << "dt = " << dt << std::endl;
-    std::cout << "T = " << T << std::endl;
-    std::cout << "Nx = " << nx << std::endl;
-    std::cout << "Ny = " << ny << std::endl;
-    std::cout << "Initial condition index = " << ic << std::endl;
+    // Testing class ShallowWater
+    ShallowWater sol1(dt, T, nx, ny, ic, dx, dy);
+//    ShallowWater sol1;
+    sol1.sayHello();
     
+    std::cout << "\ndt = " << sol1.getTimeStep() << std::endl;
+    std::cout << "T = " << sol1.getIntegrationTime() << std::endl;
+    std::cout << "Nx = " << sol1.getNx() << std::endl;
+    std::cout << "Ny = " << sol1.getNy() << std::endl;
+    std::cout << "Initial condition index = " << sol1.getIc() << std::endl;
+    std::cout << "dx = " << sol1.getdx() << std::endl;
+    std::cout << "dy = " << sol1.getdy() << std::endl;
+    
+    
+    double** g = sol1.SetInitialCondition();
+    
+    // Testing Limits structure
+    Limits lim1(0., dx*nx, 0., dy*ny);
+    std::cout << "\nx lower = " << lim1.xl << std::endl;
+    std::cout << "x upper = " << lim1.xu << std::endl;
+    std::cout << "y lower = " << lim1.yl << std::endl;
+    std::cout << "y upper = " << lim1.yu << std::endl;
     return 0;
 }
