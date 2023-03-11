@@ -16,7 +16,7 @@ int main(int argc, char** argv)
     double dt = 0.1;
     double T = 25.1;
     int nx = 10;
-    int ny = 12;
+    int ny = 10;
     int ic = 1;
    
     // Fixed parameters
@@ -35,10 +35,12 @@ int main(int argc, char** argv)
     std::cout << "Initial condition index = " << sol1.getIc() << std::endl;
     std::cout << "dx = " << sol1.getdx() << std::endl;
     std::cout << "dy = " << sol1.getdy() << std::endl;
+    std::cout << std::endl;
     
+    sol1.SetInitialCondition(); 
+    sol1.PrintMatrix();
     
-    double** g = sol1.SetInitialCondition();
-    
+    std::cout << "Hello" << std::endl;
     // Testing Limits structure
     Limits lim1(0., dx*nx, 0., dy*ny);
     std::cout << "\nx lower = " << lim1.xl << std::endl;
