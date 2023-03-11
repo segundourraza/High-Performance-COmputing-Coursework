@@ -1,6 +1,7 @@
 #include <iostream>
 #include <ShallowWater.h>
 
+
 int main(int argc, char** argv)
 {
     std::cout << "You have entered " << argc
@@ -38,8 +39,14 @@ int main(int argc, char** argv)
     std::cout << std::endl;
     
     sol1.SetInitialCondition(); 
-    sol1.PrintMatrix();
+    sol1.PrintMatrix(sol1.geth());
     
+    double* dh = new double[nx*ny];
+    sol1.GetDerivatives('x', sol1.geth(), dh);;
+        std::cout << std::endl;
+    std::cout << std::endl;
+
+    sol1.PrintMatrix(dh);
     
     // Testing Limits structure
     Limits lim1(0., dx*nx, 0., dy*ny);

@@ -22,7 +22,10 @@ class ShallowWater
     int ic = 1;
     double dx = 1.;
     double dy = 1.; 
-    double* g = nullptr;
+    \
+    double* h = nullptr;
+    double* u = nullptr;
+    double* v = nullptr;
     
 public:
     // Constructors
@@ -32,7 +35,8 @@ public:
     // Methods
     void sayHello();
     void SetInitialCondition();
-    void PrintMatrix();
+    void GetDerivatives(const char& dir, double* f, double* df);
+    void PrintMatrix(double* A);
     
     // 'Getter' functions
     double getTimeStep();
@@ -42,7 +46,9 @@ public:
     int getIc();
     double getdx();
     double getdy();
-    double* getg();
+    double* geth();
+    double* getu();
+    double* getv();
     
     ~ShallowWater(); // Destructor
     
