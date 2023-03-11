@@ -22,7 +22,7 @@ class ShallowWater
     int ic = 1;
     double dx = 1.;
     double dy = 1.; 
-    double** g = nullptr;
+    double* g = nullptr;
     
 public:
     // Constructors
@@ -42,7 +42,7 @@ public:
     int getIc();
     double getdx();
     double getdy();
-    double** getg();
+    double* getg();
     
     ~ShallowWater(); // Destructor
     

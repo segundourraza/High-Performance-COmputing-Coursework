@@ -40,12 +40,13 @@ int main(int argc, char** argv)
     sol1.SetInitialCondition(); 
     sol1.PrintMatrix();
     
-    std::cout << "Hello" << std::endl;
+    
     // Testing Limits structure
     Limits lim1(0., dx*nx, 0., dy*ny);
     std::cout << "\nx lower = " << lim1.xl << std::endl;
     std::cout << "x upper = " << lim1.xu << std::endl;
     std::cout << "y lower = " << lim1.yl << std::endl;
     std::cout << "y upper = " << lim1.yu << std::endl;
+    
     return 0;
 }
