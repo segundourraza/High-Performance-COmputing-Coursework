@@ -16,8 +16,8 @@ int main(int argc, char** argv)
     // Hard code parameters initially
     double dt = 0.1;
     double T = 25.1;
-    int nx = 10;
-    int ny = 10;
+    int nx = 6;
+    int ny = 6;
     int ic = 1;
    
     // Fixed parameters
@@ -39,14 +39,17 @@ int main(int argc, char** argv)
     std::cout << std::endl;
     
     sol1.SetInitialCondition(); 
-    sol1.PrintMatrix(sol1.geth());
+    sol1.PrintMatrix(sol1.getNx(), sol1.geth(), sol1.getNy());
     
     double* dh = new double[nx*ny];
-    sol1.GetDerivatives('x', sol1.geth(), dh);;
+    sol1.GetDerivatives('y', sol1.geth(), dh);;
         std::cout << std::endl;
     std::cout << std::endl;
 
-    sol1.PrintMatrix(dh);
+    sol1.PrintMatrix(sol1.getNx(), dh, sol1.getNy());
+    
+    sol1.EvaluateFuncBLAS(dh);
+    
     
     // Testing Limits structure
     Limits lim1(0., dx*nx, 0., dy*ny);

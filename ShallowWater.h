@@ -26,6 +26,7 @@ class ShallowWater
     double* h = nullptr;
     double* u = nullptr;
     double* v = nullptr;
+    double* f = nullptr;
     
 public:
     // Constructors
@@ -36,7 +37,8 @@ public:
     void sayHello();
     void SetInitialCondition();
     void GetDerivatives(const char& dir, double* f, double* df);
-    void PrintMatrix(double* A);
+    void PrintMatrix(const int& N,  double* A, const int& lda);
+    void EvaluateFuncBLAS(double* func);
     
     // 'Getter' functions
     double getTimeStep();

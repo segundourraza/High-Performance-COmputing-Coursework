@@ -2,6 +2,9 @@
 #include <iostream>
 #include <cblas.h>
 
+
+#define g 9.81
+
 // constructor definition
 ShallowWater::ShallowWater(){
 }   // Default Constructor
@@ -38,8 +41,8 @@ void ShallowWater::SetInitialCondition(){// ARRAY OF POINTER TO POINTER WILL BE 
 //                    g[i][j] = (double) (std::exp(-(i*dx-50)*(i*dx-50)/25));
 //                    g[i][j] = i+1 + (j+1)*10;
                     h[i*Nx + j] = (double) (std::exp(-(i*dx-Nx/2)*(i*dx-Nx/2)/(Nx/4)));
-                    u[i*Nx + j] = 0;
-                    v[i*Nx + j] = 0;
+                    u[i*Nx + j] =  99;
+                    v[i*Nx + j] = -99;
                 }
             }
             break;
@@ -74,10 +77,10 @@ void ShallowWater::SetInitialCondition(){// ARRAY OF POINTER TO POINTER WILL BE 
     }
 }
 
-void ShallowWater::PrintMatrix(double* A){ 
-    for (int i = 0; i<Ny; i++){
-        for (int j = 0; j<Nx; j++) { 
-        std::cout << A[j*Nx + i] << ",\t";
+void ShallowWater::PrintMatrix(const int& N, double* A, const int& lda){ 
+    for (int i = 0; i<lda; i++){
+        for (int j = 0; j<N; j++) { 
+        std::cout << A[j*lda + i] << ",\t";
         }
     std::cout << std::endl;
     }
@@ -146,8 +149,81 @@ void ShallowWater::GetDerivatives(const char& dir, double* f, double* df){
     }else {
         throw std::invalid_argument("ERROR: Invalid differentiation direction. Direction must be 'x' or 'y'");
     }
+}
+
+void ShallowWater::EvaluateFuncBLAS(double* f){
+    // Declering and defining variables
+    int m = 3*Ny*Nx;
+    int n = 3*Ny*Nx;
+    int kl = 1;
+    int ku = 1;
+    int lda = 1 + kl + ku;
     
     
+    // Declering and defining derivatives array
+    double* dhdx = new double[Nx*Ny];
+    ShallowWater::GetDerivatives('x', h, dhdx);
+    double* dhdy = new double[Nx*Ny];
+    ShallowWater::GetDerivatives('y', h, dhdy);
+    double* dudx = new double[Nx*Ny];
+    ShallowWater::GetDerivatives('x', u, dudx);
+    double* dudy = new double[Nx*Ny];
+    ShallowWater::GetDerivatives('y', u, dudy);
+    double* dvdx = new double[Nx*Ny];
+    ShallowWater::GetDerivatives('x', v, dvdx);
+    double* dvdy = new double[Nx*Ny];
+    ShallowWater::GetDerivatives('y', v, dvdx);
+    
+
+    double* A = new double[3*n];
+    double* B = new double[3*n];
+    double* C = new double[n];
+    double* dXdx = new double[n];
+    double* dXdy = new double[n];
+    
+    // Populate matrices
+    for (int i = 0; i< n; i+=3){
+        // Construct A
+        if (i == 0)
+        A[i*lda + ku] = A[(i+1)*lda + ku] =  A[(i+2)*lda + ku] =  u[i/3];
+        A[(i+1)*lda] = h[i/3];
+        A[i*lda + kl + ku] = g;
+        // Construct B
+        B[i*lda + ku] = B[(i+1)*lda + ku] =  B[(i+2)*lda + ku] =  v[i/3];
+        B[(i+2)*lda] = h[i/3];
+        B[(i+1)*lda + kl + ku] = g;
+        // Construct C
+        C[i] = u[i/3]*dhdx[i/3] + v[i/3]*dhdy[i/3];
+//        C[i] = u[i/3]*h[i/3] + v[i/3]*h[i/3];
+        // Construct dXdx and dXdy
+        dXdx[i] = dhdx[i/3];
+        dXdx[i+1] = dudx[i/3];
+        dXdx[i+2] = dvdx[i/3];
+        dXdy[i] = dhdy[i/3];
+        dXdy[i+1] = dudy[i/3];
+        dXdy[i+2] = dvdy[i/3];
+        
+    }
+    for(int i = 0; i< n; i++){
+        std::cout << dXdx[i] << "\t" << "\t" << dXdy[i]<< std::endl;
+    }
+//    ShallowWater::PrintMatrix(1, C, n);
+    f = new double[n];
+    cblas_dgbmv(CblasColMajor, CblasNoTrans, m, n, kl, ku, -1.0, A, lda, dXdx, 1, 0.0,  f, 1);
+    cblas_dgbmv(CblasColMajor, CblasNoTrans, m, n, kl, ku, -1.0, B, lda, dXdy, 1, 1.0, f, 1);
+    cblas_daxpy( n, 1.0, C, 1, f, 1);
+    
+    delete[] A;
+    delete[] B;
+    delete[] C;
+    delete[] dXdx;
+    delete[] dXdy;
+    delete[] dhdx;
+    delete[] dhdy;
+    delete[] dudx;
+    delete[] dudy;
+    delete[] dvdx;
+    delete[] dvdy;
 }
 
 
