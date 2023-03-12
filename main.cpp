@@ -60,5 +60,6 @@ int main(int argc, char** argv)
     std::cout << "y lower = " << lim1.yl << std::endl;
     std::cout << "y upper = " << lim1.yu << std::endl;
     
+    delete[] dh;
     return 0;
 }

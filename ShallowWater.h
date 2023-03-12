@@ -39,6 +39,7 @@ public:
     void GetDerivatives(const char& dir, double* f, double* df);
     void PrintMatrix(const int& N,  double* A, const int& lda);
     void EvaluateFuncBLAS(double* uu, double* vv, double* hh, double* f);
+    void TimeIntegrate();
     
     // 'Getter' functions
     double getTimeStep();

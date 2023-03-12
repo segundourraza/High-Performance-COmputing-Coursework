@@ -226,6 +226,10 @@ void ShallowWater::EvaluateFuncBLAS(double* uu, double* vv, double* hh, double* 
     delete[] dvdy;
 }
 
+void ShallowWater::TimeIntegrate(){
+    
+}
+
 
 // 'Getter' function definition
 double ShallowWater::getTimeStep(){ return dt;}
