@@ -151,7 +151,7 @@ void ShallowWater::GetDerivatives(const char& dir, double* f, double* df){
     }
 }
 
-void ShallowWater::EvaluateFuncBLAS(double* f){
+void ShallowWater::EvaluateFuncBLAS(double* uu, double* vv, double* hh, double* f){
     // Declering and defining variables
     int m = 3*Ny*Nx;
     int n = 3*Ny*Nx;
@@ -162,17 +162,17 @@ void ShallowWater::EvaluateFuncBLAS(double* f){
     
     // Declering and defining derivatives array
     double* dhdx = new double[Nx*Ny];
-    ShallowWater::GetDerivatives('x', h, dhdx);
+    ShallowWater::GetDerivatives('x', hh, dhdx);
     double* dhdy = new double[Nx*Ny];
-    ShallowWater::GetDerivatives('y', h, dhdy);
+    ShallowWater::GetDerivatives('y', hh, dhdy);
     double* dudx = new double[Nx*Ny];
-    ShallowWater::GetDerivatives('x', u, dudx);
+    ShallowWater::GetDerivatives('x', uu, dudx);
     double* dudy = new double[Nx*Ny];
-    ShallowWater::GetDerivatives('y', u, dudy);
+    ShallowWater::GetDerivatives('y', uu, dudy);
     double* dvdx = new double[Nx*Ny];
-    ShallowWater::GetDerivatives('x', v, dvdx);
+    ShallowWater::GetDerivatives('x', vv, dvdx);
     double* dvdy = new double[Nx*Ny];
-    ShallowWater::GetDerivatives('y', v, dvdx);
+    ShallowWater::GetDerivatives('y', vv, dvdx);
     
 
     double* A = new double[3*n];
@@ -185,15 +185,15 @@ void ShallowWater::EvaluateFuncBLAS(double* f){
     for (int i = 0; i< n; i+=3){
         // Construct A
         if (i == 0)
-        A[i*lda + ku] = A[(i+1)*lda + ku] =  A[(i+2)*lda + ku] =  u[i/3];
-        A[(i+1)*lda] = h[i/3];
+        A[i*lda + ku] = A[(i+1)*lda + ku] =  A[(i+2)*lda + ku] =  uu[i/3];
+        A[(i+1)*lda] = hh[i/3];
         A[i*lda + kl + ku] = g;
         // Construct B
-        B[i*lda + ku] = B[(i+1)*lda + ku] =  B[(i+2)*lda + ku] =  v[i/3];
-        B[(i+2)*lda] = h[i/3];
+        B[i*lda + ku] = B[(i+1)*lda + ku] =  B[(i+2)*lda + ku] =  vv[i/3];
+        B[(i+2)*lda] = hh[i/3];
         B[(i+1)*lda + kl + ku] = g;
         // Construct C
-        C[i] = u[i/3]*dhdx[i/3] + v[i/3]*dhdy[i/3];
+        C[i] = uu[i/3]*dhdx[i/3] + vv[i/3]*dhdy[i/3];
 //        C[i] = u[i/3]*h[i/3] + v[i/3]*h[i/3];
         // Construct dXdx and dXdy
         dXdx[i] = dhdx[i/3];
@@ -204,9 +204,9 @@ void ShallowWater::EvaluateFuncBLAS(double* f){
         dXdy[i+2] = dvdy[i/3];
         
     }
-    for(int i = 0; i< n; i++){
-        std::cout << dXdx[i] << "\t" << "\t" << dXdy[i]<< std::endl;
-    }
+//    for(int i = 0; i< n; i++){
+//        std::cout << dXdx[i] << "\t" << "\t" << dXdy[i]<< std::endl;
+//    }
 //    ShallowWater::PrintMatrix(1, C, n);
     f = new double[n];
     cblas_dgbmv(CblasColMajor, CblasNoTrans, m, n, kl, ku, -1.0, A, lda, dXdx, 1, 0.0,  f, 1);

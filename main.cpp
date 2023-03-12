@@ -48,7 +48,9 @@ int main(int argc, char** argv)
 
     sol1.PrintMatrix(sol1.getNx(), dh, sol1.getNy());
     
-    sol1.EvaluateFuncBLAS(dh);
+    
+
+    sol1.EvaluateFuncBLAS(sol1.getu(), sol1.getv(), sol1.geth(),dh);
     
     
     // Testing Limits structure

@@ -38,7 +38,7 @@ public:
     void SetInitialCondition();
     void GetDerivatives(const char& dir, double* f, double* df);
     void PrintMatrix(const int& N,  double* A, const int& lda);
-    void EvaluateFuncBLAS(double* func);
+    void EvaluateFuncBLAS(double* uu, double* vv, double* hh, double* f);
     
     // 'Getter' functions
     double getTimeStep();
