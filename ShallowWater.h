@@ -36,7 +36,7 @@ public:
     // Methods
     void sayHello();
     void SetInitialCondition();
-    void GetDerivatives(const char& dir, double* f, double* df);
+    double GetDerivatives(double* vect, const double& step);
     void PrintMatrix(const int& N,  double* A, const int& lda);
     void EvaluateFuncBLAS(double* uu, double* vv, double* hh, double* f);
     void TimeIntegrate();

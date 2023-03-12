@@ -87,70 +87,6 @@ void ShallowWater::PrintMatrix(const int& N, double* A, const int& lda){
 }
 
 
-void ShallowWater::GetDerivatives(const char& dir, double* f, double* df){
-    // Performs differentiation of array f in direction 'dir'. If dir == 'x', column  wise
-    // differentiation is performed. If dir == 'y', row wise differentiation is performed.
-    // On output, f is rewritten with the derivatives    
-    double coeffs[6] = {-0.016667, 0.15, -0.75, 0.75, -0.15, 0.016667};
-    if (dir == 'x'){
-        double step = dx;
-        for (int iy = 0 ; iy < Ny; iy++){
-            for (int ix = 0; ix < Nx; ix++){
-                if (ix == 0){
-                    double vect[6] = {f[iy + (Nx-3)*Ny] , f[iy + (Nx-2)*Ny], f[iy + (Nx-1)*Ny], f[iy + (1)*Ny], f[iy + (2)*Ny], f[iy + (3)*Ny]};
-                    df[iy + ix*Ny] = cblas_ddot(6, coeffs, 1, vect, 1)/step;
-                }else if (ix == 1){
-                    double vect[6] = {f[iy + (Nx-2)*Ny] , f[iy + (Nx-1)*Ny], f[iy + 0*Ny], f[iy + (2)*Ny], f[iy + (3)*Ny], f[iy + (4)*Ny]};
-                    df[iy + ix*Ny] = cblas_ddot(6, coeffs, 1, vect, 1)/step;
-                } else if (ix == 2){
-                    double vect[6] = {f[iy + (Nx-1)*Ny] , f[iy + (0)*Ny], f[iy + (1)*Ny], f[iy + (3)*Ny], f[iy + (4)*Ny], f[iy + (5)*Ny]};
-                    df[iy + ix*Ny] = cblas_ddot(6, coeffs, 1, vect, 1)/step;
-                }else if (ix == Nx-3){
-                    double vect[6] = {f[iy + (ix-3)*Ny] , f[iy + (ix-2)*Ny], f[iy + (ix-1)*Ny], f[iy + (ix+1)*Ny], f[iy + (ix+2)*Ny], f[iy + (0)*Ny]};
-                    df[iy + ix*Ny] = cblas_ddot(6, coeffs, 1, vect, 1)/step;
-                } else if (ix == Nx-2){
-                    double vect[6] = {f[iy + (ix-3)*Ny] , f[iy + (ix-2)*Ny], f[iy + (ix-1)*Ny], f[iy + (ix+1)*Ny], f[iy + (0)*Ny], f[iy + (1)*Ny]};
-                    df[iy + ix*Ny] = cblas_ddot(6, coeffs, 1, vect, 1)/step;   
-                } else if (ix == Nx-1){
-                    double vect[6] = {f[iy + (ix-3)*Ny] , f[iy + (ix-2)*Ny], f[iy + (ix-1)*Ny], f[iy + (0)*Ny], f[iy + (1)*Ny], f[iy + (2)*Ny]};
-                    df[iy + ix*Ny] = cblas_ddot(6, coeffs, 1, vect, 1)/step;
-                }else {
-                    df[iy +ix*Ny] = cblas_ddot(6, coeffs, 1, &f[iy + (ix-3)*Ny], Ny)/step;
-                }
-            }
-        }
-    }else if (dir =='y'){
-        double step = dy;
-        for (int ix = 0 ; ix < Nx; ix++){
-            for (int iy = 0; iy < Ny; iy++){
-                if (iy == 0){
-                    double vect[6] = {f[Ny-3 + ix*Ny] , f[Ny-2 + ix*Ny], f[Ny-1 + ix*Ny], f[iy+1 + (ix)*Ny], f[iy+2 + (ix)*Ny], f[iy+3 + (ix)*Ny]};
-                    df[iy + ix*Ny] = cblas_ddot(6, coeffs, 1, vect, 1)/step;
-                }else if (iy == 1){
-                    double vect[6] = {f[Ny-2 + ix*Ny] , f[Ny-1 + ix*Ny], f[iy-1 + ix*Ny], f[iy+1 + (ix)*Ny], f[iy+2 + (ix)*Ny], f[iy+3 + (ix)*Ny]};
-                    df[iy + ix*Ny] = cblas_ddot(6, coeffs, 1, vect, 1)/step;
-                } else if (iy == 2){
-                    double vect[6] = {f[Ny-1 + ix*Ny] , f[iy-2 + ix*Ny], f[iy-1 + ix*Ny], f[iy+1 + (ix)*Ny], f[iy+2 + (ix)*Ny], f[iy+3 + (ix)*Ny]};
-                    df[iy + ix*Ny] = cblas_ddot(6, coeffs, 1, vect, 1)/step;
-                }else if (iy == Ny-3){
-                    double vect[6] = {f[iy -3 + ix*Ny] , f[iy -2 + ix*Ny], f[iy -1 + ix*Ny], f[iy+1 + (ix)*Ny], f[iy+2 + (ix)*Ny], f[0 + (ix)*Ny]};
-                    df[iy + ix*Ny] = cblas_ddot(6, coeffs, 1, vect, 1)/step;
-                } else if (iy == Ny-2){
-                    double vect[6] = {f[iy -3 + ix*Ny] , f[iy -2 + ix*Ny], f[iy -1 + ix*Ny], f[iy+1 + (ix)*Ny], f[0 + (ix)*Ny], f[1 + (ix)*Ny]};
-                    df[iy + ix*Ny] = cblas_ddot(6, coeffs, 1, vect, 1)/step;
-                } else if (iy == Ny-1){
-                    double vect[6] = {f[iy -3 + ix*Ny] , f[iy -2 + ix*Ny], f[iy -1 + ix*Ny], f[0 + (ix)*Ny], f[1+ (ix)*Ny], f[2+ (ix)*Ny]};
-                    df[iy + ix*Ny] = cblas_ddot(6, coeffs, 1, vect, 1)/step;
-                }else {
-                    df[iy +ix*Ny] = cblas_ddot(6, coeffs, 1, &f[iy-3 + ix*Ny], 1)/step;
-                }
-            }
-        }
-    }else {
-        throw std::invalid_argument("ERROR: Invalid differentiation direction. Direction must be 'x' or 'y'");
-    }
-}
-
 void ShallowWater::EvaluateFuncBLAS(double* uu, double* vv, double* hh, double* f){
     // Declering and defining variables
     int m = 3*Ny*Nx;
@@ -162,17 +98,16 @@ void ShallowWater::EvaluateFuncBLAS(double* uu, double* vv, double* hh, double* 
     
     // Declering and defining derivatives array
     double* dhdx = new double[Nx*Ny];
-    ShallowWater::GetDerivatives('x', hh, dhdx);
-    double* dhdy = new double[Nx*Ny];
-    ShallowWater::GetDerivatives('y', hh, dhdy);
     double* dudx = new double[Nx*Ny];
-    ShallowWater::GetDerivatives('x', uu, dudx);
-    double* dudy = new double[Nx*Ny];
-    ShallowWater::GetDerivatives('y', uu, dudy);
     double* dvdx = new double[Nx*Ny];
-    ShallowWater::GetDerivatives('x', vv, dvdx);
+    for (int i = 0; i< Ny; i++){
+        
+    }
+    
+    double* dhdy = new double[Nx*Ny];
+    double* dudy = new double[Nx*Ny];
     double* dvdy = new double[Nx*Ny];
-    ShallowWater::GetDerivatives('y', vv, dvdx);
+
     
 
     double* A = new double[3*n];
@@ -226,8 +161,56 @@ void ShallowWater::EvaluateFuncBLAS(double* uu, double* vv, double* hh, double* 
     delete[] dvdy;
 }
 
+int ShallowWater::PBCI(const int& index, const int& N ){
+    if (index < 0){
+        return (N-index);
+    } else {
+        return index;
+    }
+}
+
 void ShallowWater::TimeIntegrate(){
     
+    int m = Ny; 
+    int n = Nx;
+    int lda = m; // Column major
+    
+    double* dhdx = new double[Nx*Ny];
+    double* dudx = new double[Nx*Ny];
+    double* dvdx = new double[Nx*Ny];
+
+    double* dhdy = new double[Nx*Ny];
+    double* dudy = new double[Nx*Ny];
+    double* dvdy = new double[Nx*Ny];
+    
+    double coeffs[6] = {-0.016667, 0.15, -0.75, 0.75, -0.15, 0.016667};
+    // Serial Impelemntation
+    
+    for (double t = dt; t < T; t+=dt){
+    
+        // Calculate derivatives in direction x
+        for (int iy = 0; iy < Ny; iy+=){
+            for (int ix = 0; ix<Nx; ix+=){
+                if 
+                double* vect = {u[iy + (ix)*lda
+            }
+        }
+        
+        
+        
+        // Calculate derivatives in direction y
+        
+        
+        
+        
+    }
+    
+    delete[] dhdx;
+    delete[] dhdy;
+    delete[] dudx;
+    delete[] dudy;
+    delete[] dvdx;
+    delete[] dvdy;
 }
 
 

@@ -42,16 +42,6 @@ int main(int argc, char** argv)
     sol1.PrintMatrix(sol1.getNx(), sol1.geth(), sol1.getNy());
     
     double* dh = new double[nx*ny];
-    sol1.GetDerivatives('y', sol1.geth(), dh);;
-        std::cout << std::endl;
-    std::cout << std::endl;
-
-    sol1.PrintMatrix(sol1.getNx(), dh, sol1.getNy());
-    
-    
-
-    sol1.EvaluateFuncBLAS(sol1.getu(), sol1.getv(), sol1.geth(),dh);
-    
     
     // Testing Limits structure
     Limits lim1(0., dx*nx, 0., dy*ny);
