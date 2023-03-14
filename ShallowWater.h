@@ -28,6 +28,13 @@ class ShallowWater
     double* v = nullptr;
     double* f = nullptr;
     
+    void PopulateA(const int& N, double* A, const int& lda, const double* coeffs);
+    void ConstructSVector(double* S);
+    void getDerivatives(const int& kl, const int& ku, const double* A, const int& lda, const double* S, const int& ldx, double* dSdx, double* dXdy, const double* coeffs);  
+//    double GetDerivatives(double* vect, const double& step);
+    void ApplyPeriodicBC(const int& Nx, const double* S, const int& ldx, double* dSdx, double* dSdy, const double* coeffs); 
+    void EvaluateFuncBlas(const int& dimS, double* S, const double* dSdx, const double* dSdy, double* k);
+    
 public:
     // Constructors
     ShallowWater(); // Default Constructorn declaration
@@ -36,9 +43,8 @@ public:
     // Methods
     void sayHello();
     void SetInitialCondition();
-    double GetDerivatives(double* vect, const double& step);
-    void PrintMatrix(const int& N,  double* A, const int& lda);
-    void EvaluateFuncBLAS(double* uu, double* vv, double* hh, double* f);
+    void PrintMatrix(const int& N,  const double* A, const int& lda, const int& inc);
+    void PrintVector(const int& N, const double* x);
     void TimeIntegrate();
     
     // 'Getter' functions

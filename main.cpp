@@ -1,9 +1,10 @@
 #include <iostream>
 #include <ShallowWater.h>
-
+#include <iomanip>
 
 int main(int argc, char** argv)
 {
+//    std::cout << std::setprecision(4) << std::fixed;
     std::cout << "You have entered " << argc
          << " arguments:" << "\n";
     
@@ -16,8 +17,8 @@ int main(int argc, char** argv)
     // Hard code parameters initially
     double dt = 0.1;
     double T = 25.1;
-    int nx = 6;
-    int ny = 6;
+    int nx = 11;
+    int ny = 11;
     int ic = 1;
    
     // Fixed parameters
@@ -39,9 +40,10 @@ int main(int argc, char** argv)
     std::cout << std::endl;
     
     sol1.SetInitialCondition(); 
-    sol1.PrintMatrix(sol1.getNx(), sol1.geth(), sol1.getNy());
-    
-    double* dh = new double[nx*ny];
+//    sol1.PrintMatrix(sol1.getNx(), sol1.geth(), sol1.getNy());
+
+    std::cout << std::endl;
+    sol1.TimeIntegrate();
     
     // Testing Limits structure
     Limits lim1(0., dx*nx, 0., dy*ny);
@@ -50,6 +52,6 @@ int main(int argc, char** argv)
     std::cout << "y lower = " << lim1.yl << std::endl;
     std::cout << "y upper = " << lim1.yu << std::endl;
     
-    delete[] dh;
+
     return 0;
 }

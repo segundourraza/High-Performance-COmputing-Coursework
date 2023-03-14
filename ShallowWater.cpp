@@ -1,7 +1,7 @@
 #include <ShallowWater.h>
 #include <iostream>
 #include <cblas.h>
-
+#include <cstdlib>
 
 #define g 9.81
 
@@ -33,6 +33,11 @@ void ShallowWater::SetInitialCondition(){// ARRAY OF POINTER TO POINTER WILL BE 
     h = new double[Nx*Ny];
     u = new double[Nx*Ny];
     v = new double[Nx*Ny];
+    
+    for (int i = 0; i<Nx*Ny; i++){
+        u[i] =  99;
+        v[i] =  -99;
+    }
     // Populate 2 dimensional array depending on Index of initial condition
     switch (ic){
         case 1:
@@ -40,9 +45,7 @@ void ShallowWater::SetInitialCondition(){// ARRAY OF POINTER TO POINTER WILL BE 
                 for (int j = 0; j<Ny; j++){
 //                    g[i][j] = (double) (std::exp(-(i*dx-50)*(i*dx-50)/25));
 //                    g[i][j] = i+1 + (j+1)*10;
-                    h[i*Nx + j] = (double) (std::exp(-(i*dx-Nx/2)*(i*dx-Nx/2)/(Nx/4)));
-                    u[i*Nx + j] =  99;
-                    v[i*Nx + j] = -99;
+                    h[i*Nx + j] = (double) (10 + std::exp(-(i*dx-Nx/2)*(i*dx-Nx/2)/(Nx/4)));
                 }
             }
             break;
@@ -50,170 +53,347 @@ void ShallowWater::SetInitialCondition(){// ARRAY OF POINTER TO POINTER WILL BE 
             for (int i = 0; i<Nx; i++){
                 for (int j = 0; j<Ny; j++){
 //                    h[i*Nx + j] = (double) ( std::exp(-(j*dy-50)*(j*dy-50)/25));
-                    h[i*Nx + j] = (double) (std::exp(-(j*dy-Nx/2)*(j*dy-Nx/2)/(Nx/4)));
-                    u[i*Nx + j] = 0;
-                    v[i*Nx + j] = 0;
+                    h[i*Nx + j] = (double) (10+ std::exp(-(j*dy-Nx/2)*(j*dy-Nx/2)/(Nx/4)));
                 }
             }
             break;
         case 3: 
             for (int i = 0; i<Nx; i++){
                 for (int j = 0; j<Ny; j++){
-                    h[i*Nx + j] = (double) (std::exp(-((i*dx-50)*(i*dx-50) + (j*dy-50)*(j*dy-50))/25));
-                    u[i*Nx + j] = 0;
-                    v[i*Nx + j] = 0;
+                    h[i*Nx + j] = (double) (10 + std::exp(-((i*dx-50)*(i*dx-50) + (j*dy-50)*(j*dy-50))/25));
                 }
             }
             break;
         case 4: 
             for (int i = 0; i<Nx; i++){
                 for (int j = 0; j<Ny; j++){
-                    h[i*Nx + j] = (double) (std::exp(-((i*dx-25)*(i*dx-25) + (j*dy-25)*(j*dy-25))/25) + std::exp(-((i*dx-75)*(i*dx-75) + (j*dy-75)*(j*dy-75))/25));
-                    u[i*Nx + j] = 0;
-                    v[i*Nx + j] = 0;
+                    h[i*Nx + j] = (double) (10 + std::exp(-((i*dx-25)*(i*dx-25) + (j*dy-25)*(j*dy-25))/25) + std::exp(-((i*dx-75)*(i*dx-75) + (j*dy-75)*(j*dy-75))/25));
                 }
             }
             break;
     }
 }
 
-void ShallowWater::PrintMatrix(const int& N, double* A, const int& lda){ 
-    for (int i = 0; i<lda; i++){
-        for (int j = 0; j<N; j++) { 
-        std::cout << A[j*lda + i] << ",\t";
-        }
-    std::cout << std::endl;
+void ShallowWater::PrintVector(const int& N, const double* x){
+    for (int i = 0; i<N; i++){
+        std::cout << x[i] << std::endl;
     }
 }
 
-
-void ShallowWater::EvaluateFuncBLAS(double* uu, double* vv, double* hh, double* f){
-    // Declering and defining variables
-    int m = 3*Ny*Nx;
-    int n = 3*Ny*Nx;
-    int kl = 1;
-    int ku = 1;
-    int lda = 1 + kl + ku;
-    
-    
-    // Declering and defining derivatives array
-    double* dhdx = new double[Nx*Ny];
-    double* dudx = new double[Nx*Ny];
-    double* dvdx = new double[Nx*Ny];
-    for (int i = 0; i< Ny; i++){
-        
-    }
-    
-    double* dhdy = new double[Nx*Ny];
-    double* dudy = new double[Nx*Ny];
-    double* dvdy = new double[Nx*Ny];
-
-    
-
-    double* A = new double[3*n];
-    double* B = new double[3*n];
-    double* C = new double[n];
-    double* dXdx = new double[n];
-    double* dXdy = new double[n];
-    
-    // Populate matrices
-    for (int i = 0; i< n; i+=3){
-        // Construct A
-        if (i == 0)
-        A[i*lda + ku] = A[(i+1)*lda + ku] =  A[(i+2)*lda + ku] =  uu[i/3];
-        A[(i+1)*lda] = hh[i/3];
-        A[i*lda + kl + ku] = g;
-        // Construct B
-        B[i*lda + ku] = B[(i+1)*lda + ku] =  B[(i+2)*lda + ku] =  vv[i/3];
-        B[(i+2)*lda] = hh[i/3];
-        B[(i+1)*lda + kl + ku] = g;
-        // Construct C
-        C[i] = uu[i/3]*dhdx[i/3] + vv[i/3]*dhdy[i/3];
-//        C[i] = u[i/3]*h[i/3] + v[i/3]*h[i/3];
-        // Construct dXdx and dXdy
-        dXdx[i] = dhdx[i/3];
-        dXdx[i+1] = dudx[i/3];
-        dXdx[i+2] = dvdx[i/3];
-        dXdy[i] = dhdy[i/3];
-        dXdy[i+1] = dudy[i/3];
-        dXdy[i+2] = dvdy[i/3];
-        
-    }
-//    for(int i = 0; i< n; i++){
-//        std::cout << dXdx[i] << "\t" << "\t" << dXdy[i]<< std::endl;
-//    }
-//    ShallowWater::PrintMatrix(1, C, n);
-    f = new double[n];
-    cblas_dgbmv(CblasColMajor, CblasNoTrans, m, n, kl, ku, -1.0, A, lda, dXdx, 1, 0.0,  f, 1);
-    cblas_dgbmv(CblasColMajor, CblasNoTrans, m, n, kl, ku, -1.0, B, lda, dXdy, 1, 1.0, f, 1);
-    cblas_daxpy( n, 1.0, C, 1, f, 1);
-    
-    delete[] A;
-    delete[] B;
-    delete[] C;
-    delete[] dXdx;
-    delete[] dXdy;
-    delete[] dhdx;
-    delete[] dhdy;
-    delete[] dudx;
-    delete[] dudy;
-    delete[] dvdx;
-    delete[] dvdy;
-}
-
-int ShallowWater::PBCI(const int& index, const int& N ){
-    if (index < 0){
-        return (N-index);
-    } else {
-        return index;
-    }
-}
-
-void ShallowWater::TimeIntegrate(){
-    
-    int m = Ny; 
-    int n = Nx;
-    int lda = m; // Column major
-    
-    double* dhdx = new double[Nx*Ny];
-    double* dudx = new double[Nx*Ny];
-    double* dvdx = new double[Nx*Ny];
-
-    double* dhdy = new double[Nx*Ny];
-    double* dudy = new double[Nx*Ny];
-    double* dvdy = new double[Nx*Ny];
-    
-    double coeffs[6] = {-0.016667, 0.15, -0.75, 0.75, -0.15, 0.016667};
-    // Serial Impelemntation
-    
-    for (double t = dt; t < T; t+=dt){
-    
-        // Calculate derivatives in direction x
-        for (int iy = 0; iy < Ny; iy+=){
-            for (int ix = 0; ix<Nx; ix+=){
-                if 
-                double* vect = {u[iy + (ix)*lda
+void ShallowWater::PrintMatrix(const int& N, const double* A, const int& lday, const int& inc){ 
+    for (int i = 0; i<lday; i+=inc){
+        for (int j = 0; j<N; j++) {
+            if(std::abs(A[j*lday + (i)]) < 1e-13){
+                std::cout << 0 << ",\t";
+            }
+            else{
+                std::cout << A[j*lday + (i)] << ",\t";
             }
         }
-        
-        
-        
-        // Calculate derivatives in direction y
-        
-        
-        
-        
+    std::cout << "\n" << std::endl;
     }
+}
+
+//void ShallowWater::TimeIntegrate(){
+//    
+//    int m = Ny; 
+//    int n = Nx;
+//    int lday = m; // Column major
+//    
+//    double* dhdx = new double[Nx*Ny];
+//    double* dudx = new double[Nx*Ny];
+//    double* dvdx = new double[Nx*Ny];
+//
+//    double* dhdy = new double[Nx*Ny];
+//    double* dudy = new double[Nx*Ny];
+//    double* dvdy = new double[Nx*Ny];
+//
+//    double coeffs[6] = {-0.016667, 0.15, -0.75, 0.75, -0.15, 0.016667};
+//    double RK4[4] = {dt/6, dt/3, dt/3, dt/6};
+//    double Kcoeffs[4] = {0, dt/2, dt/2, dt};
+//    
+//    // Serial Impelemntation
+//
+////    for (double t = dt; t < T; t+=dt){
+//    for (int t = 0; t<1; t++){
+//        
+//        for (int k = 0; k < 1; k++){
+//            
+//            // Calculate derivatives in direction x and y (ASSUME SQUARE)
+//            
+//            // Boundary points for ix <3 and ix > Nx-3
+//            for (int iy = 0; iy < Ny; iy++){
+//                
+//                // x derivatives
+//                
+//                // Left most points
+//                dhdx[iy] = coeffs[0]*h[iy + (Nx-3)*lday] + coeffs[1]*h[iy + (Nx-2)*lday] + coeffs[2]*h[iy + (Nx-1)*lday] + coeffs[3]*h[iy + (1)*lday] + coeffs[4]*h[iy + (2)*lday] + coeffs[5]*h[iy + (3)*lday];
+//                dhdx[iy + 1*lday] = coeffs[0]*h[iy + (Nx-2)*lday] + coeffs[1]*h[iy + (Nx-1)*lday] + coeffs[2]*h[iy + (0)*lday] + coeffs[3]*h[iy + (2)*lday] + coeffs[4]*h[iy + (3)*lday] + coeffs[5]*h[iy + (4)*lday];
+//                dhdx[iy + 2*lday] = coeffs[0]*h[iy +  (Nx-1)*lday] + coeffs[1]*h[iy + (0)*lday] + coeffs[2]*h[iy + (1)*lday] + coeffs[3]*h[iy + (3)*lday] + coeffs[4]*h[iy + (4)*lday] + coeffs[5]*h[iy + (5)*lday];
+//                
+//                dudx[iy] = coeffs[0]*u[iy + (Nx-3)*lday] + coeffs[1]*u[iy + (Nx-2)*lday] + coeffs[2]*u[iy + (Nx-1)*lday] + coeffs[3]*u[iy + (1)*lday] + coeffs[4]*u[iy + (2)*lday] + coeffs[5]*u[iy + (3)*lday];
+//                dudx[iy + 1*lday] = coeffs[0]*u[iy + (Nx-2)*lday] + coeffs[1]*u[iy + (Nx-1)*lday] + coeffs[2]*u[iy + (0)*lday] + coeffs[3]*u[iy + (2)*lday] + coeffs[4]*u[iy + (3)*lday] + coeffs[5]*u[iy + (4)*lday];
+//                dudx[iy + 2*lday] = coeffs[0]*u[iy + (Nx-1)*lday] + coeffs[1]*u[iy + (0)*lday] + coeffs[2]*u[iy + (1)*lday] + coeffs[3]*u[iy + (3)*lday] + coeffs[4]*u[iy + (4)*lday] + coeffs[5]*u[iy + (5)*lday];
+//                
+//                dvdx[iy] = coeffs[0]*v[iy + (Nx-3)*lday] + coeffs[1]*v[iy + (Nx-2)*lday] + coeffs[2]*v[iy + (Nx-1)*lday] + coeffs[3]*v[iy + (1)*lday] + coeffs[4]*v[iy + (2)*lday] + coeffs[5]*v[iy + (3)*lday];
+//                dvdx[iy + 1*lday] = coeffs[0]*v[iy + (Nx-2)*lday] + coeffs[1]*v[iy + (Nx-1)*lday] + coeffs[2]*v[iy + (0)*lday] + coeffs[3]*v[iy + (2)*lday] + coeffs[4]*v[iy + (3)*lday] + coeffs[5]*v[iy + (4)*lday];
+//                dvdx[iy + 2*lday] = coeffs[0]*v[iy + (Nx-1)*lday] + coeffs[1]*v[iy + (0)*lday] + coeffs[2]*v[iy + (1)*lday] + coeffs[3]*v[iy + (3)*lday] + coeffs[4]*v[iy + (4)*lday] + coeffs[5]*v[iy + (5)*lday];
+//                
+//                // Right most points
+//                dhdx[iy+(Nx-1)*lday] = coeffs[0]*h[iy + (Nx-4)*lday] + coeffs[1]*h[iy + (Nx-3)*lday] + coeffs[2]*h[iy + (Nx-2)*lday] + coeffs[3]*h[iy + (0)*lday] + coeffs[4]*h[iy + (1)*lday] + coeffs[5]*h[iy + (2)*lday];
+//                dhdx[iy+(Nx-2)*lday] = coeffs[0]*h[iy + (Nx-5)*lday] + coeffs[1]*h[iy + (Nx-4)*lday] + coeffs[2]*h[iy + (Nx-3)*lday] + coeffs[3]*h[iy + (Nx-1)*lday] + coeffs[4]*h[iy + (0)*lday] + coeffs[5]*h[iy + (1)*lday];
+//                dhdx[iy+(Nx-3)*lday] = coeffs[0]*h[iy + (Nx-6)*lday] + coeffs[1]*h[iy + (Nx-5)*lday] + coeffs[2]*h[iy + (Nx-4)*lday] + coeffs[3]*h[iy + (Nx-2)*lday] + coeffs[4]*h[iy + (Nx-1)*lday] + coeffs[5]*h[iy + (0)*lday];
+//                
+//                dudx[iy+(Nx-1)*lday] = coeffs[0]*u[iy + (Nx-4)*lday] + coeffs[1]*u[iy + (Nx-3)*lday] + coeffs[2]*u[iy + (Nx-2)*lday] + coeffs[3]*u[iy + (0)*lday] + coeffs[4]*u[iy + (1)*lday] + coeffs[5]*u[iy + (2)*lday];
+//                dudx[iy+(Nx-2)*lday] = coeffs[0]*u[iy + (Nx-5)*lday] + coeffs[1]*u[iy + (Nx-4)*lday] + coeffs[2]*u[iy + (Nx-3)*lday] + coeffs[3]*u[iy + (Nx-1)*lday] + coeffs[4]*u[iy + (0)*lday] + coeffs[5]*u[iy + (1)*lday];
+//                dudx[iy+(Nx-3)*lday] = coeffs[0]*u[iy + (Nx-6)*lday] + coeffs[1]*u[iy + (Nx-5)*lday] + coeffs[2]*u[iy + (Nx-4)*lday] + coeffs[3]*u[iy + (Nx-2)*lday] + coeffs[4]*u[iy + (Nx-1)*lday] + coeffs[5]*u[iy + (0)*lday];
+//                
+//                dudx[iy+(Nx-1)*lday] = coeffs[0]*v[iy + (Nx-4)*lday] + coeffs[1]*v[iy + (Nx-3)*lday] + coeffs[2]*v[iy + (Nx-2)*lday] + coeffs[3]*v[iy + (0)*lday] + coeffs[4]*v[iy + (1)*lday] + coeffs[5]*v[iy + (2)*lday];
+//                dudx[iy+(Nx-2)*lday] = coeffs[0]*v[iy + (Nx-5)*lday] + coeffs[1]*v[iy + (Nx-4)*lday] + coeffs[2]*v[iy + (Nx-3)*lday] + coeffs[3]*v[iy + (Nx-1)*lday] + coeffs[4]*v[iy + (0)*lday] + coeffs[5]*v[iy + (1)*lday];
+//                dudx[iy+(Nx-3)*lday] = coeffs[0]*v[iy + (Nx-6)*lday] + coeffs[1]*v[iy + (Nx-5)*lday] + coeffs[2]*v[iy + (Nx-4)*lday] + coeffs[3]*v[iy + (Nx-2)*lday] + coeffs[4]*v[iy + (Nx-1)*lday] + coeffs[5]*v[iy + (0)*lday];
+//                
+//                // y derivatives
+//                
+//            }
+//            
+//            // Inner points
+//            
+//            for (int iy = 0; iy < Ny; iy++){
+//                for (int ix = 3; ix<Nx-3; ix++){
+//                    dhdx[iy+lday*ix] = coeffs[0]*h[iy + (ix-3)*lday] + coeffs[1]*h[iy + (ix-2)*lday] + coeffs[2]*h[iy + (ix-1)*lday] + coeffs[3]*h[iy + (ix+1)*lday] + coeffs[4]*h[iy + (ix+2)*lday] + coeffs[5]*h[iy + (ix+3)*lday];
+//                    
+//                    dudx[iy+lday*ix] = coeffs[0]*u[iy + (ix-3)*lday] + coeffs[1]*u[iy + (ix-2)*lday] + coeffs[2]*u[iy + (ix-1)*lday] + coeffs[3]*u[iy + (ix+1)*lday] + coeffs[4]*u[iy + (ix+2)*lday] + coeffs[5]*u[iy + (ix+3)*lday];
+//                    
+//                    dvdx[iy+lday*ix] = coeffs[0]*v[iy + (ix-3)*lday] + coeffs[1]*v[iy + (ix-2)*lday] + coeffs[2]*v[iy + (ix-1)*lday] + coeffs[3]*v[iy + (ix+1)*lday] + coeffs[4]*v[iy + (ix+2)*lday] + coeffs[5]*v[iy + (ix+3)*lday];
+//                }
+//            }
+//            
+//            std::cout << std::endl;
+//            ShallowWater::PrintMatrix(n, dhdx, lday);
+//            
+//             
+//            // Calculate derivatives in direction y
+//            
+//            
+//            
+//            
+//        }
+//    }
+//    delete[] dhdx;
+//    delete[] dhdy;
+//    delete[] dudx;
+//    delete[] dudy;
+//    delete[] dvdx;
+//    delete[] dvdy;
+//}
+
+
+
+void ShallowWater::TimeIntegrate(){ 
     
-    delete[] dhdx;
-    delete[] dhdy;
-    delete[] dudx;
-    delete[] dudy;
-    delete[] dvdx;
-    delete[] dvdy;
+    int ldsy = 3*Ny;
+    int dimS = ldsy*Nx;
+    int kl = 3; 
+    int ku = 3;
+    int lday = 1+ kl + ku;
+    
+    // Initialize variables
+    double* A = new double[lday*Nx];
+    double* S = new double[dimS];
+    double* Snew = new double[dimS];
+    double* k = new double[dimS];
+    double* dSdx = new double[dimS];
+    double* dSdy = new double[dimS];
+    
+    double coeffs[6] = {-0.016667, 0.15, -0.75, 0.75, -0.15, 0.016667};
+    double RK4coeffs[4] = {dt/6, dt/3, dt/3, dt/6};
+    double kcoeffs[3] = {dt/2, dt/2, dt};
+    
+    // Construct state vector S = [u, v, h]^T. [u,v,h] for all nodes stack on yop of each other in a column major way
+    ShallowWater::ConstructSVector(S);
+    
+    // Construct derivative matrix A
+    ShallowWater::PopulateA(Nx, A, lday, coeffs);
+    
+
+    
+    // Start integration loop 
+    double t = 0;
+    while (t < dt){
+        std::cout << "--------------------------------TIME STEP: " << dt << "--------------------------------" << "\n" << "\n" << "\n" << std::endl;
+//        PrintMatrix(Nx, k+1, dimS/Nx, 3);
+//        std::cout << std::endl;
+//        std::cout << std::endl;
+//        std::cout << std::endl;
+//        std::cout << std::endl;
+        t += dt;
+        
+        
+        
+        // Calculate k1
+        
+        
+        getDerivatives(kl, ku, A, lday, S, ldsy, dSdx, dSdy, coeffs);
+        
+        EvaluateFuncBlas(dimS, S, dSdx, dSdy, k);
+        
+        
+        for (int i = 0; i<dimS; i++){
+            Snew[i] = S[i] + RK4coeffs[1]*k[i];
+            S[i] += kcoeffs[1]*k[i];
+        }
+        
+        
+//                
+//        // Calculate k2
+//        getDerivatives(kl, ku, A, lday, S, ldsy, dSdx, dSdy, coeffs);
+//        EvaluateFuncBlas(dimS, S, dSdx, dSdy, k);
+//        for (int i = 0; i<dimS; i++){
+//            Snew[i] += RK4coeffs[2]*k[i];
+//            S[i] += kcoeffs[2]*k[i] -kcoeffs[1]*k[i];
+//        }
+//        
+//        // Calculate k3
+//        getDerivatives(kl, ku, A, lday, S, ldsy, dSdx, dSdy, coeffs);
+//        EvaluateFuncBlas(dimS, S, dSdx, dSdy, k);
+//        for (int i = 0; i<dimS; i++){
+//            Snew[i] += RK4coeffs[3]*k[i];
+//            S[i] +=  kcoeffs[3]*k[i]- kcoeffs[2]*k[i];
+//        }
+//        
+//        // Calculate k4
+//        getDerivatives(kl, ku, A, lday, S, ldsy, dSdx, dSdy, coeffs);
+//        EvaluateFuncBlas(dimS, S, dSdx, dSdy, k);
+//        for (int i = 0; i<dimS; i++){
+//            S[i] = Snew[i] + RK4coeffs[4]*k[i];
+//        }
+    }   
 }
 
 
+void ShallowWater::EvaluateFuncBlas(const int& dimS, double* S, const double* dSdx, const double* dSdy, double* k){
+    // k = F(S) = - B*d(S)/dx - C*d(S)/dy
+    // Construct banded matrix B
+    int kl = 2;
+    int ku = 2;
+    int ldy = 1 + kl + ku;
+    double* B = new double[ldy*dimS];
+    
+    for (int i = 0; i < dimS; i+=3){
+        if (i != 0) {B[(i-1)*ldy] = g;}
+        B[i*ldy+ku] = B[(i+1)*ldy+ku] = B[(i+2)*ldy+ku] = S[i];
+        if (i!=dimS-1){B[(i+1)*ldy-1] = S[i+2];}
+    }
+    
+    cblas_dgbmv(CblasColMajor, CblasNoTrans, dimS, dimS, kl, ku, -1.0, B, ldy, dSdx, 1, 0, k, 1);
+        PrintMatrix(5, B + (dimS-5)*0, ldy, 1);
+        std::cout << std::endl;
+        std::cout << std::endl;
+        std::cout << std::endl;
+        std::cout << std::endl;
+    
+            
+            
+    // Construct banded matrix C, overwrite B
+    kl = 1;
+    ku = 1;
+    ldy = 1 + kl + ku;
+    delete[] B;
+    
+    B = new double[ldy*dimS];
+    for (int i = 0; i < dimS; i+=3){
+        B[i*ldy+ku] = B[(i+1)*ldy+ku] = B[(i+2)*ldy+ku] = S[i+1];
+        if (i != 0) {B[(i-1)*ldy] = g;}
+        if (i<dimS-2){B[(i+2)*ldy-1] = S[i+2];}
+        
+    }
+    
+        PrintMatrix(5, B , ldy, 1);
+        std::cout << std::endl;
+        std::cout << std::endl;
+        std::cout << std::endl;
+        std::cout << std::endl;
+        std::cout << std::endl;
+  
+    
+//        PrintMatrix(Nx, k+0, dimS/Nx , 3);
+//        std::cout << std::endl;
+//        std::cout << std::endl;
+//        std::cout << std::endl;
+//        std::cout << std::endl;
+    
+    cblas_dgbmv(CblasColMajor, CblasNoTrans, dimS, dimS, kl, ku, -1.0, B, ldy, dSdy, 1, 1.0, k, 1);
+        
+    
+}
+
+
+void ShallowWater::getDerivatives(const int& kl, const int& ku, const double* A, const int& lday, const double* S, const int& ldsy, double* dSdx, double* dSdy, const double* coeffs){
+    
+    // Iterate over rows
+    for (int iy = 0; iy < ldsy; iy ++){
+        cblas_dgbmv(CblasColMajor, CblasNoTrans, Ny, Nx, kl, ku, 1/dx, A, lday, S+iy, ldsy, 0.0, dSdx + iy, ldsy);
+    }
+    
+    // Iterate over columns
+    for (int ix = 0 ; ix < Nx; ix ++ ){
+        cblas_dgbmv(CblasColMajor, CblasNoTrans, Ny, Nx, kl, ku, 1/dy, A, lday, S + ix*ldsy, 3, 0.0, dSdy+ix*ldsy, 3);
+        cblas_dgbmv(CblasColMajor, CblasNoTrans, Ny, Nx, kl, ku, 1/dy, A, lday, S + 1 + ix*ldsy, 3, 0.0, dSdy + 1 + ix*ldsy, 3);
+        cblas_dgbmv(CblasColMajor, CblasNoTrans, Ny, Nx, kl, ku, 1/dy, A, lday, S + 2 + ix*ldsy, 3, 0.0, dSdy + 2 + ix*ldsy, 3);
+    }
+    
+    ShallowWater::ApplyPeriodicBC(Nx, S, ldsy, dSdx, dSdy, coeffs);    
+}
+
+
+
+void ShallowWater::ApplyPeriodicBC(const int& Nx, const double* S, const int& ldsy, double* dSdx, double* dSdy, const double* coeffs){    
+    // Apply BC on x derivatives
+    // Loop over rows
+    for (int iy = 0; iy < ldsy; iy++){
+        dSdx[iy] += coeffs[2]*S[iy+(Nx-1)*ldsy] + coeffs[1]*S[iy+(Nx-2)*ldsy] + coeffs[0]*S[iy+(Nx-3)*ldsy];
+        dSdx[iy+ldsy] += coeffs[1]*S[iy+(Nx-1)*ldsy] + coeffs[0]*S[iy+(Nx-2)*ldsy];
+        dSdx[iy+2*ldsy] += coeffs[0]*S[iy+(Nx-1)*ldsy];
+        
+        dSdx[iy + (Nx-1)*ldsy] += coeffs[3]*S[iy] + coeffs[4]*S[iy+ldsy] + coeffs[5]*S[iy + 2*ldsy];
+        dSdx[iy + (Nx-2)*ldsy] += coeffs[4]*S[iy] + coeffs[5]*S[iy+ldsy];
+        dSdx[iy + (Nx-3)*ldsy] += coeffs[5]*S[iy];
+        
+    }    
+    
+    // Apply BC on y derivatives
+    // Loop over columns
+    for (int ix = 0; ix< Nx; ix++){
+        for (int j = 0; j<3; j++){
+        dSdy[ix*ldsy+j] += coeffs[2]*S[(ix+1)*ldsy-3+j] + coeffs[1]*S[(ix+1)*ldsy-6+j] + coeffs[0]*S[(ix+1)*ldsy-9+j];
+        dSdy[ix*ldsy+3+j] += coeffs[1]*S[(ix+1)*ldsy-3+j] + coeffs[0]*S[(ix+1)*ldsy-6+j];
+        dSdy[ix*ldsy+6+j] += coeffs[0]*S[(ix+1)*ldsy-3+j];
+        
+        dSdy[(ix+1)*ldsy -3+j] += coeffs[3]*S[ix*ldsy+j] + coeffs[4]*S[ix*ldsy+3+j] + coeffs[5]*S[ix*ldsy +6+j];
+        dSdy[(ix+1)*ldsy -6+j] += coeffs[4]*S[ix*ldsy+j] + coeffs[5]*S[ix*ldsy+3+j];
+        dSdy[(ix+1)*ldsy -9+j] += coeffs[5]*S[ix*ldsy+j];
+        }
+    }
+}
+void ShallowWater::ConstructSVector(double* S){
+    for (int i = 0; i<3*Nx*Ny; i+=3){
+        S[i] =  u[i/3];
+        S[i+1] = v[i/3];
+        S[i+2] = h[i/3];
+    }
+    
+}
+void ShallowWater::PopulateA(const int& N, double* A, const int& lday, const double* coeffs){
+    // Banded
+    if (Nx == Ny){
+        for (int i =0; i < N; i++){
+            for (int j = 0; j <3; j++){
+                A[i*lday + j] = coeffs[5-j];
+                A[(i+1)*lday -1 -j] = coeffs[j];
+            }
+        }
+    }
+}
 // 'Getter' function definition
 double ShallowWater::getTimeStep(){ return dt;}
 double ShallowWater::getIntegrationTime(){ return T;}
