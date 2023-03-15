@@ -19,7 +19,7 @@ int main(int argc, char** argv)
     double T = 5;
     int nx = 100;
     int ny = 100;
-    int ic = 3;
+    int ic = 1;
    
     // Fixed parameters
     double dx = 1.;

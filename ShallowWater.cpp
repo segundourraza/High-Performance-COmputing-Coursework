@@ -203,10 +203,8 @@ void ShallowWater::TimeIntegrate(){
     double* A = new double[lday*Nx];
     double* S = new double[dimS];
     double* Snew = new double[dimS];
-    double* knew = new double[dimS];
-    double* kold = new double[dimS];
-    double* dSdx = new double[dimS];
-    double* dSdy = new double[dimS];
+    double* k2 = new double[dimS];
+    double* k1 = new double[dimS];
     
     double coeffs[6] = {-0.016667, 0.15, -0.75, 0.75, -0.15, 0.016667};
     double RK4coeffs[4] = {dt/6, dt/3, dt/3, dt/6};
@@ -221,67 +219,86 @@ void ShallowWater::TimeIntegrate(){
     // Start integration loop 
     double t = 0;
     while (t < T){
-        t += dt;
-        std::cout << "--------------------------------TIME: " << t << "--------------------------------" << "\n" << "\n" << "\n" << std::endl;
-//        PrintMatrix(Nx, k+1, dimS/Nx, 3);
-//        std::cout << std::endl;
-//        std::cout << std::endl;
-//        std::cout << std::endl;
-//        std::cout << std::endl;
-
+        t += dt; 
         
-        // Calculate k1
-
-        std::cout << "k1:" << std::endl;
-        std::cout << std::endl;
-        std::cout << std::endl;         
-        getDerivatives(kl, ku, A, lday, S, ldsy, dSdx, dSdy, coeffs);
-        EvaluateFuncBlas(dimS, S, dSdx, dSdy, kold);
-        
-        
-       
+        // Calculate k1 and propagate Snew
+        EvaluateFuncBlasV2(kl, ku, A, lday, S, ldsy, coeffs, k1);
         for (int i = 0; i<dimS; i++){
-            Snew[i] = S[i] + RK4coeffs[0]*kold[i];
-            S[i] += kcoeffs[0]*kold[i];
+            Snew[i] = S[i] + RK4coeffs[0]*k1[i];
+            S[i] += kcoeffs[0]*k1[i];
         }
         
+        // Calculate k2 and propagate Snew
+        EvaluateFuncBlasV2(kl, ku, A, lday, S, ldsy, coeffs, k2);
+        for (int i = 0; i<dimS; i++){
+            Snew[i] += RK4coeffs[1]*k2[i];
+            S[i] += kcoeffs[1]*k2[i] -kcoeffs[0]*k1[i];
+        }
+        
+        // Calculate k3 and propagate Snew
+        EvaluateFuncBlasV2(kl, ku, A, lday, S, ldsy, coeffs, k1);
+        for (int i = 0; i<dimS; i++){
+            Snew[i] += RK4coeffs[2]*k1[i];
+            S[i] +=  kcoeffs[2]*k1[i]- kcoeffs[1]*k2[i];
+        }
+        
+        // Calculate k4 and update S for next iteration
+        EvaluateFuncBlasV2(kl, ku, A, lday, S, ldsy, coeffs, k2);
+        for (int i = 0; i<dimS; i++){
+            S[i] = Snew[i] + RK4coeffs[3]*k2[i];
+        }
     
-        // Calculate k2
-        std::cout << "k2:" << std::endl;
-        std::cout << std::endl;
-        std::cout << std::endl;         
-        getDerivatives(kl, ku, A, lday, S, ldsy, dSdx, dSdy, coeffs);
-        EvaluateFuncBlas(dimS, S, dSdx, dSdy, knew);
-        
-        for (int i = 0; i<dimS; i++){
-            Snew[i] += RK4coeffs[1]*knew[i];
-            S[i] += kcoeffs[1]*knew[i] -kcoeffs[0]*kold[i];
-        }   
-    
-        // Calculate k3
-        std::cout << "k3:" << std::endl;
-        std::cout << std::endl;
-        std::cout << std::endl;         
-        getDerivatives(kl, ku, A, lday, S, ldsy, dSdx, dSdy, coeffs);
-        EvaluateFuncBlas(dimS, S, dSdx, dSdy, kold);
-        for (int i = 0; i<dimS; i++){
-            Snew[i] += RK4coeffs[2]*kold[i];
-            S[i] +=  kcoeffs[2]*kold[i]- kcoeffs[1]*knew[i];
-        }
-        
-        
-        // Calculate k4
-        std::cout << "k4:" << std::endl;
-        std::cout << std::endl;
-        std::cout << std::endl;         
-        getDerivatives(kl, ku, A, lday, S, ldsy, dSdx, dSdy, coeffs);
-        EvaluateFuncBlas(dimS, S, dSdx, dSdy, knew);
-        for (int i = 0; i<dimS; i++){
-            S[i] = Snew[i] + RK4coeffs[3]*knew[i];
-        }
-        
-    }   
+        std::cout << "\rTime step: " << t<< " seconds"<< std::endl;
+    }  
+    std::cout << "Writting file!" << std::endl;
     WriteFile(S);
+}
+
+void ShallowWater::EvaluateFuncBlasV2(const int& kla, const int& kua, const double* A, const int& lday, double* S, const int& ldsy, const double* coeffs, double* k){
+    // k = F(S) = - B*d(S)/dx - C*d(S)/dy
+    int dimS = ldsy*Nx;
+    
+    double* dSdx = new double[dimS];
+    double* dSdy = new double[dimS];
+    
+    // Step 1: Evaluate derivatives of State S
+    getDerivatives(kla, kua, A, lday, S, ldsy, dSdx, dSdy, coeffs);
+    
+    // Step 2: Construct banded matrix B
+    int kl = 2;
+    int ku = 2;
+    int ldy = 1 + kl + ku;
+    double* B = new double[ldy*dimS];
+    
+    for (int i = 0; i < dimS; i+=3){ 
+        if (i != 0) {B[(i-1)*ldy] = g;}
+        B[i*ldy+ku] = B[(i+1)*ldy+ku] = B[(i+2)*ldy+ku] = S[i];
+        if (i!=dimS-1){B[(i+1)*ldy-1] = S[i+2];}
+    }
+    B[(dimS-1)*ldy] = g;
+     
+    // Step 3: Evaluate b*d(S)/dx
+    cblas_dgbmv(CblasColMajor, CblasNoTrans, dimS, dimS, kl, ku, -1.0, B, ldy, dSdx, 1, 0, k, 1);
+        
+    // Step 4: Construct banded matrix C
+    kl = 1;
+    ku = 1;
+    ldy = 1 + kl + ku;
+    double* C = new double[ldy*dimS];
+    
+    for (int i = 0; i < dimS; i+=3){
+        C[i*ldy+ku] = C[(i+1)*ldy+ku] = C[(i+2)*ldy+ku] = S[i+1];
+        if (i != 0) {C[(i-1)*ldy] = g;}
+        if (i<dimS-1){C[(i+2)*ldy-1] = S[i+2];}
+    }
+    
+    // Step 5: Evaluate value of function f(S)
+    cblas_dgbmv(CblasColMajor, CblasNoTrans, dimS, dimS, kl, ku, -1.0, C, ldy, dSdy, 1, 1.0, k, 1);
+    
+    delete[] B;
+    delete[] C;
+    delete[] dSdx;
+    delete[] dSdy;
 }
 
 

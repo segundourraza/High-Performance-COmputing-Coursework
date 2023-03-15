@@ -23,6 +23,7 @@ class ShallowWater
     void ConstructSVector(double* S);
     void getDerivatives(const int& kl, const int& ku, const double* A, const int& lda, const double* S, const int& ldx, double* dSdx, double* dXdy, const double* coeffs);  
 //    double GetDerivatives(double* vect, const double& step);
+    void EvaluateFuncBlasV2(const int& kl, const int& ku, const double* A, const int& lday, double* S, const int& ldsy, const double* coeffs, double* k);
     void ApplyPeriodicBC(const int& Nx, const double* S, const int& ldx, double* dSdx, double* dSdy, const double* coeffs); 
     void EvaluateFuncBlas(const int& dimS, double* S, const double* dSdx, const double* dSdy, double* k);
     void WriteFile(const double* S);
