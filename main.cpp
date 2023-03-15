@@ -4,7 +4,7 @@
 
 int main(int argc, char** argv)
 {
-//    std::cout << std::setprecision(4) << std::fixed;
+    std::cout << std::setprecision(5) << std::fixed;
     std::cout << "You have entered " << argc
          << " arguments:" << "\n";
     
@@ -16,10 +16,10 @@ int main(int argc, char** argv)
 
     // Hard code parameters initially
     double dt = 0.1;
-    double T = 25.1;
-    int nx = 11;
-    int ny = 11;
-    int ic = 1;
+    double T = 5;
+    int nx = 100;
+    int ny = 100;
+    int ic = 3;
    
     // Fixed parameters
     double dx = 1.;
