@@ -23,7 +23,7 @@ test3: $(TARGET)
 	./$(TARGET) --dt 0.1 --T 5 --Nx 100 --Ny 100 --ic 3
 
 test4: $(TARGET)
-	./$(TARGET) --dt 0.1 --T 5 --Nc 100 --Ny 100 --ic 4
+	./$(TARGET) --dt 0.1 --T 5 --Nx 100 --Ny 100 --ic 4
 
 .PHONY: clean
 	

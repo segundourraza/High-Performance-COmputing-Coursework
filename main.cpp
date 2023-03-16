@@ -6,8 +6,10 @@
 
 namespace po = boost::program_options;
 
-int main(int argc, char** argv)
+int main(int argc, char* argv[])
 {
+    
+    std::cout << "HELLO" << std::endl;
     // Boost program options
     po::options_description opts("Allowed options");
     opts.add_options()
@@ -21,7 +23,6 @@ int main(int argc, char** argv)
     po::variables_map vm;
     po::store(po::parse_command_line(argc, argv, opts), vm);
     po::notify(vm);
-
     if (vm.count("help")) {
         std::cout << opts << "\n";
         return 1;
@@ -34,6 +35,13 @@ int main(int argc, char** argv)
     const int Ny        = vm["Ny"].as<int>();
     const int ic         = vm["ic"].as<double>();
 
+
+    
+//    const double dt     = 0.1;
+//    const double T      = 5;
+//    const int Nx        = 11;
+//    const int Ny        = 11;
+//    const int ic         = 1;
     int analysis = 2; // [1] - BLAS analysis, [2] - for based analysis
     // Fixed parameters
     double dx = 1.;
@@ -56,6 +64,8 @@ int main(int argc, char** argv)
     sol1.SetInitialCondition(); 
 
     sol1.TimeIntegrateForLoop();
-
+//    sol1.TimeIntegrate();    
+    sol1.WriteFile();
+    
     return 0;
 }

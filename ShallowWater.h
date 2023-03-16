@@ -27,7 +27,7 @@ class ShallowWater
     void EvaluateFuncBlasV2(const int& kl, const int& ku, const double* A, const int& lday, double* S, const int& ldsy, const double* coeffs, double* k);
     void ApplyPeriodicBC(const int& Nx, const double* S, const int& ldx, double* dSdx, double* dSdy, const double* coeffs); 
     void EvaluateFuncBlas(const int& dimS, double* S, const double* dSdx, const double* dSdy, double* k);
-    void WriteFile(const double* S);
+    
 public:
     // Constructors
     ShallowWater(); // Default Constructorn declaration
@@ -40,6 +40,7 @@ public:
     void PrintVector(const int& N, const double* x);
     void TimeIntegrate();
     void TimeIntegrateForLoop();
+    void WriteFile();
     
     // 'Getter' functions
     double getTimeStep();
