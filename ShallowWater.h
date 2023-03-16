@@ -22,13 +22,12 @@ class ShallowWater
     
     void PopulateA(const int& N, double* A, const int& lda, const double* coeffs);
     void ConstructSVector(double* S);
-    void getDerivatives(const int& kl, const int& ku, const double* A, const int& lda, const double* S, const int& ldx, double* dSdx, double* dXdy, const double* coeffs);  
-//    double GetDerivatives(double* vect, const double& step);
+    void GetDerivativesBlas(const int& kl, const int& ku, const double* A, const int& lda, const double* S, const int& ldx, double* dSdx, double* dXdy, const double* coeffs);
+    void GetDerivativesForLoop(const double* var, double* dvardx, double* dvardy, const double* coeffs);
     void EvaluateFuncBlasV2(const int& kl, const int& ku, const double* A, const int& lday, double* S, const int& ldsy, const double* coeffs, double* k);
     void ApplyPeriodicBC(const int& Nx, const double* S, const int& ldx, double* dSdx, double* dSdy, const double* coeffs); 
     void EvaluateFuncBlas(const int& dimS, double* S, const double* dSdx, const double* dSdy, double* k);
     void WriteFile(const double* S);
-    
 public:
     // Constructors
     ShallowWater(); // Default Constructorn declaration
@@ -40,6 +39,7 @@ public:
     void PrintMatrix(const int& N,  const double* A, const int& lda, const int& inc);
     void PrintVector(const int& N, const double* x);
     void TimeIntegrate();
+    void TimeIntegrateForLoop();
     
     // 'Getter' functions
     double getTimeStep();

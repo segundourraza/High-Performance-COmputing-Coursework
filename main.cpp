@@ -1,33 +1,46 @@
 #include <iostream>
-#include <ShallowWater.h>
-#include <iomanip>
+#include <boost/program_options.hpp>
+#include <boost/timer/timer.hpp>
+
+#include "ShallowWater.h"
+
+namespace po = boost::program_options;
 
 int main(int argc, char** argv)
 {
-    std::cout << std::setprecision(5) << std::fixed;
-    std::cout << "You have entered " << argc
-         << " arguments:" << "\n";
-    
-//    double dt = atof(argv[1]);
-//    double T = atof(argv[2]);
-//    int nx = atoi(argv[3]);
-//    int ny = atoi(argv[4]);
-//    int ic = atoi(argv[5]);
+    // Boost program options
+    po::options_description opts("Allowed options");
+    opts.add_options()
+        ("help", "produce help message")
+        ("dt", po::value<double>()->default_value(0.1), "Time-step to use.")
+        ("T", po::value<double>()->default_value(5.0), "Total integration time.")
+        ("Nx", po::value<int>()->default_value(100), "Number of grid points in x.")
+        ("Ny", po::value<int>()->default_value(100), "Number of grid points in y.")
+        ("ic", po::value<double>()->default_value(1), "Index of the initial condition to use (1-4).");
 
-    // Hard code parameters initially
-    double dt = 0.1;
-    double T = 5;
-    int nx = 100;
-    int ny = 100;
-    int ic = 4;
-    int analysis = 1; // [1] - BLAS analysis, [2] - for based analysis
-   
+    po::variables_map vm;
+    po::store(po::parse_command_line(argc, argv, opts), vm);
+    po::notify(vm);
+
+    if (vm.count("help")) {
+        std::cout << opts << "\n";
+        return 1;
+    }
+
+    // Loading parameters into memory
+    const double dt     = vm["dt"].as<double>();
+    const double T      = vm["T"].as<double>();
+    const int Nx        = vm["Nx"].as<int>();
+    const int Ny        = vm["Ny"].as<int>();
+    const int ic         = vm["ic"].as<double>();
+
+    int analysis = 2; // [1] - BLAS analysis, [2] - for based analysis
     // Fixed parameters
     double dx = 1.;
     double dy = 1.; 
     
     // Testing class ShallowWater
-    ShallowWater sol1(dt, T, nx, ny, ic, dx, dy, analysis);
+    ShallowWater sol1(dt, T, Nx, Ny, ic, dx, dy, analysis);
 //    ShallowWater sol1;
     sol1.sayHello();
     
@@ -41,18 +54,8 @@ int main(int argc, char** argv)
     std::cout << std::endl;
     
     sol1.SetInitialCondition(); 
-//    sol1.PrintMatrix(sol1.getNx(), sol1.geth(), sol1.getNy());
 
-    std::cout << std::endl;
-    sol1.TimeIntegrate();
-    
-    // Testing Limits structure
-    Limits lim1(0., dx*nx, 0., dy*ny);
-    std::cout << "\nx lower = " << lim1.xl << std::endl;
-    std::cout << "x upper = " << lim1.xu << std::endl;
-    std::cout << "y lower = " << lim1.yl << std::endl;
-    std::cout << "y upper = " << lim1.yu << std::endl;
-    
+    sol1.TimeIntegrateForLoop();
 
     return 0;
 }
