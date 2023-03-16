@@ -19,14 +19,15 @@ int main(int argc, char** argv)
     double T = 5;
     int nx = 100;
     int ny = 100;
-    int ic = 1;
+    int ic = 4;
+    int analysis = 1; // [1] - BLAS analysis, [2] - for based analysis
    
     // Fixed parameters
     double dx = 1.;
     double dy = 1.; 
     
     // Testing class ShallowWater
-    ShallowWater sol1(dt, T, nx, ny, ic, dx, dy);
+    ShallowWater sol1(dt, T, nx, ny, ic, dx, dy, analysis);
 //    ShallowWater sol1;
     sol1.sayHello();
     

@@ -10,7 +10,7 @@
 ShallowWater::ShallowWater(){
 }   // Default Constructor
 
-ShallowWater::ShallowWater(double dtt, double Tt, int Nxx, int Nyy, int icc, double dxx, double dyy) : dt(dtt), T(Tt), Nx(Nxx), Ny(Nyy), ic(icc), dx(dxx), dy(dyy){
+ShallowWater::ShallowWater(double dtt, double Tt, int Nxx, int Nyy, int icc, double dxx, double dyy, int typeAnalysis) : dt(dtt), T(Tt), Nx(Nxx), Ny(Nyy), ic(icc), dx(dxx), dy(dyy), analysis(typeAnalysis){
 }   // Constructor using initialization list to avoid calling default class constructor and then over writting
 
 
@@ -193,6 +193,7 @@ void ShallowWater::PrintMatrix(const int& N, const double* A, const int& lday, c
 
 void ShallowWater::TimeIntegrate(){ 
     
+    // Populate Differentiation matrix (Only Required by BLAS implementation)
     int ldsy = 3*Ny;
     int dimS = ldsy*Nx;
     int kl = 3; 
@@ -248,7 +249,7 @@ void ShallowWater::TimeIntegrate(){
             S[i] = Snew[i] + RK4coeffs[3]*k2[i];
         }
     
-        std::cout << "\rTime step: " << t<< " seconds"<< std::endl;
+        std::cout << (int) (t/dt) << " time steps done out of " << (int) (T/dt) << std::endl;
     }  
     std::cout << "Writting file!" << std::endl;
     WriteFile(S);

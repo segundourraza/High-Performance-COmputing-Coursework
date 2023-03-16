@@ -1,0 +1,129 @@
+commit f0c9b6add106f6f855aa010057b17371eb25ef5b
+Author: Segundo Urraza Atue <su219@ic.ac.uk>
+Date:   Wed Mar 15 21:26:39 2023 +0000
+
+    Re organised how blas based evaluation of function was called to make easier changes between blass and for loop based implementation
+
+M	ShallowWater.cpp
+M	ShallowWater.h
+M	main.cpp
+
+commit c44823bf0c87a9e1bbd0fa4600d2d5188e5065d0
+Author: Segundo Urraza Atue <su219@ic.ac.uk>
+Date:   Wed Mar 15 20:46:15 2023 +0000
+
+    First working iteration of algorithms using BLASsetxkbmap us! Added WriteFile method
+
+M	ShallowWater.cpp
+M	ShallowWater.h
+M	main.cpp
+
+commit 20de9d31c47e08ce1d594b0eaa0a77c5a654cced
+Author: Segundo Urraza Atue <su219@ic.ac.uk>
+Date:   Tue Mar 14 23:20:56 2023 +0000
+
+    Completed evaluation of derivatives and added evaluation of f using blas
+
+M	ShallowWater.cpp
+M	ShallowWater.h
+M	main.cpp
+
+commit 0f429b3c5d5e1c5cd3c7e0ab0469f3cd9fead742
+Author: Segundo Urraza Atue <su219@ic.ac.uk>
+Date:   Sun Mar 12 15:37:06 2023 +0000
+
+    Created new branch to focus of a more parallelizable approach
+
+M	ShallowWater.cpp
+M	ShallowWater.h
+M	main.cpp
+
+commit 3f031f7cf255ad9a0934c82672dc7098ba29c7c5
+Author: Segundo Urraza Atue <su219@ic.ac.uk>
+Date:   Sun Mar 12 02:29:52 2023 +0000
+
+    started 'TimeIntegrate' method
+
+M	ShallowWater.cpp
+M	ShallowWater.h
+M	main.cpp
+
+commit b893a6d5bc0d729f32c753d5a3d3bfe52e054484
+Author: Segundo Urraza Atue <su219@ic.ac.uk>
+Date:   Sun Mar 12 02:27:34 2023 +0000
+
+    changed function 'EvaluateFuncBLAS' so it can take in any value of X (y in assignment pdf) vector which contains [h, u, v]
+
+M	ShallowWater.cpp
+M	ShallowWater.h
+M	main.cpp
+
+commit b1222316b7ecd7a8ec74baaa1c22a2088c7e1dc7
+Author: Segundo Urraza Atue <su219@ic.ac.uk>
+Date:   Sun Mar 12 02:13:59 2023 +0000
+
+    Added 'EvaluateFuncBLAS' method to class
+
+M	ShallowWater.cpp
+M	ShallowWater.h
+M	main.cpp
+
+commit bca18ef8ae4d7a63ae12257b1d4026ff4c2c397b
+Author: Segundo Urraza Atue <su219@ic.ac.uk>
+Date:   Sat Mar 11 16:49:08 2023 +0000
+
+    Added getDerivative method to class
+
+M	ShallowWater.cpp
+M	ShallowWater.h
+M	main.cpp
+
+commit 8c98d8e392c41a4cd2a6245284cf28d9f5e3048d
+Author: Segundo Urraza Atue <su219@ic.ac.uk>
+Date:   Sat Mar 11 14:21:55 2023 +0000
+
+    Branched code. Divided code into pointer-to-pointer 2d array implementation and standard  pointer approach (master)
+
+M	ShallowWater.cpp
+M	ShallowWater.h
+M	main.cpp
+
+commit 576274126ca5969488e6c4e58c172e9a302c8bfc
+Author: Segundo Urraza Atue <su219@ic.ac.uk>
+Date:   Sat Mar 11 13:44:25 2023 +0000
+
+    Restructured methods and how g was being created
+
+M	ShallowWater.cpp
+M	ShallowWater.h
+M	main.cpp
+
+commit fd1476558e43167330cd11cea9ab392b0ab3a7b0
+Author: Segundo Urraza Atue <su219@ic.ac.uk>
+Date:   Fri Mar 10 18:49:40 2023 +0000
+
+    Added 'SetInitialCondition' method to SHallowWater class
+
+M	ShallowWater.cpp
+M	ShallowWater.h
+M	main.cpp
+
+commit 7967877bdd731eddc62baada8b622f466751012a
+Author: Segundo Urraza Atue <su219@ic.ac.uk>
+Date:   Fri Mar 10 17:05:44 2023 +0000
+
+    Added functionalities to class 'ShallowWater'. Constructors and Destructors. Added 'limit' structure to implement in grid initial condition generation.
+
+M	ShallowWater.cpp
+M	ShallowWater.h
+M	main.cpp
+
+commit d156a2cb046e843dbe5546ec668d053391d07011
+Author: Segundo Urraza Atue <su219@ic.ac.uk>
+Date:   Fri Mar 10 14:49:46 2023 +0000
+
+    Created main function with command-line argument passing capabilities. Created ShallowWater class with basic 'sayHello' method.
+
+A	ShallowWater.cpp
+A	ShallowWater.h
+A	main.cpp

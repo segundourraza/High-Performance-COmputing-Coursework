@@ -14,6 +14,7 @@ class ShallowWater
     int ic = 1;
     double dx = 1.;
     double dy = 1.; 
+    int analysis = 1;
     \
     double* h = nullptr;
     double* u = nullptr;
@@ -31,7 +32,7 @@ class ShallowWater
 public:
     // Constructors
     ShallowWater(); // Default Constructorn declaration
-    ShallowWater(double dtt, double Tt, int Nxx, int Nyy, int icc, double dxx, double dyy); // Constructor declaration
+    ShallowWater(double dtt, double Tt, int Nxx, int Nyy, int icc, double dxx, double dyy, int typeAnalysis); // Constructor declaration
     
     // Methods
     void sayHello();
