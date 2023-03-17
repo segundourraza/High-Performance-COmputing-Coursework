@@ -1,4 +1,5 @@
 #include <iostream>
+#include <iomanip>
 #include <boost/program_options.hpp>
 #include <boost/timer/timer.hpp>
 
@@ -8,8 +9,6 @@ namespace po = boost::program_options;
 
 int main(int argc, char* argv[])
 {
-    
-    std::cout << "HELLO" << std::endl;
     // Boost program options
     po::options_description opts("Allowed options");
     opts.add_options()
@@ -52,20 +51,29 @@ int main(int argc, char* argv[])
 //    ShallowWater sol1;
     sol1.sayHello();
     
-    std::cout << "\ndt = " << sol1.getTimeStep() << std::endl;
-    std::cout << "T = " << sol1.getIntegrationTime() << std::endl;
-    std::cout << "Nx = " << sol1.getNx() << std::endl;
-    std::cout << "Ny = " << sol1.getNy() << std::endl;
+    std::cout << "\nTime-step: " << sol1.getTimeStep() << std::endl;
+    std::cout << "Total integration time: " << sol1.getIntegrationTime() << std::endl;
+    std::cout << "Number of grid points in x = " << sol1.getNx() << std::endl;
+    std::cout << "Number of grid points in y = " << sol1.getNy() << std::endl;
     std::cout << "Initial condition index = " << sol1.getIc() << std::endl;
-    std::cout << "dx = " << sol1.getdx() << std::endl;
-    std::cout << "dy = " << sol1.getdy() << std::endl;
     std::cout << std::endl;
     
     sol1.SetInitialCondition(); 
 
-    sol1.TimeIntegrateForLoop();
-//    sol1.TimeIntegrate();    
+    if (analysis == 1){
+        std::cout << "BLAS IMPLEMENTATION SELECTED" << std::endl;
+        sol1.TimeIntegrate();    
+    }
+    else if (analysis == 2){
+        std::cout << "FOR LOOP IMPLEMENTATION SELECTED" << std::endl;
+        sol1.TimeIntegrateForLoop();
+    }
+    
     sol1.WriteFile();
     
+    int x = 27;
+    int y = 89;
+    std::cout << std::setprecision (10) << std::fixed << "h[" << x << "," << y << "] = " << *(sol1.geth() + y +Ny*x) << std::endl;
+    std::cout << std::setprecision (10) << std::fixed << "h[" << y/4 << "," << x << "] = " << *(sol1.geth() + x +Ny*y/4) << std::endl;
     return 0;
 }
