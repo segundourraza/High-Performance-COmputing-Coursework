@@ -238,14 +238,14 @@ void ShallowWater::GetDerivativesForLoop(const double* var, double* dvardx, doub
         // Boundary points for ix <3 and ix > Nx-3
         
         // Left most points
-        dvardx[iy] = 1/dx * (coeffs[0]*var[iy + (Nx-4)*ldy] + coeffs[1]*var[iy + (Nx-3)*ldy] + coeffs[2]*var[iy + (Nx-2)*ldy] + coeffs[3]*var[iy + (1)*ldy] + coeffs[4]*var[iy + (2)*ldy] + coeffs[5]*var[iy + (3)*ldy]);
-        dvardx[iy + 1*ldy] = 1/dx*(coeffs[0]*var[iy + (Nx-3)*ldy] + coeffs[1]*var[iy + (Nx-2)*ldy] + coeffs[2]*var[iy + (0)*ldy] + coeffs[3]*var[iy + (2)*ldy] + coeffs[4]*var[iy + (3)*ldy] + coeffs[5]*var[iy + (4)*ldy]);
-        dvardx[iy + 2*ldy] = 1/dx*(coeffs[0]*var[iy +  (Nx-2)*ldy] + coeffs[1]*var[iy + (0)*ldy] + coeffs[2]*var[iy + (1)*ldy] + coeffs[3]*var[iy + (3)*ldy] + coeffs[4]*var[iy + (4)*ldy] + coeffs[5]*var[iy + (5)*ldy]);
+        dvardx[iy] = 1/dx * (coeffs[0]*var[iy + (Nx-3)*ldy] + coeffs[1]*var[iy + (Nx-2)*ldy] + coeffs[2]*var[iy + (Nx-1)*ldy] + coeffs[3]*var[iy + (1)*ldy] + coeffs[4]*var[iy + (2)*ldy] + coeffs[5]*var[iy + (3)*ldy]);
+        dvardx[iy + 1*ldy] = 1/dx*(coeffs[0]*var[iy + (Nx-2)*ldy] + coeffs[1]*var[iy + (Nx-1)*ldy] + coeffs[2]*var[iy + (0)*ldy] + coeffs[3]*var[iy + (2)*ldy] + coeffs[4]*var[iy + (3)*ldy] + coeffs[5]*var[iy + (4)*ldy]);
+        dvardx[iy + 2*ldy] = 1/dx*(coeffs[0]*var[iy +  (Nx-1)*ldy] + coeffs[1]*var[iy + (0)*ldy] + coeffs[2]*var[iy + (1)*ldy] + coeffs[3]*var[iy + (3)*ldy] + coeffs[4]*var[iy + (4)*ldy] + coeffs[5]*var[iy + (5)*ldy]);
         
         // Right most points
-        dvardx[iy+(Nx-1)*ldy] = 1/dx*(coeffs[0]*var[iy + (Nx-4)*ldy] + coeffs[1]*var[iy + (Nx-3)*ldy] + coeffs[2]*var[iy + (Nx-2)*ldy] + coeffs[3]*var[iy + (1)*ldy] + coeffs[4]*var[iy + (2)*ldy] + coeffs[5]*var[iy + (3)*ldy]);
-        dvardx[iy+(Nx-2)*ldy] = 1/dx*(coeffs[0]*var[iy + (Nx-5)*ldy] + coeffs[1]*var[iy + (Nx-4)*ldy] + coeffs[2]*var[iy + (Nx-3)*ldy] + coeffs[3]*var[iy + (Nx-1)*ldy] + coeffs[4]*var[iy + (1)*ldy] + coeffs[5]*var[iy + (2)*ldy]);
-        dvardx[iy+(Nx-3)*ldy] = 1/dx*(coeffs[0]*var[iy + (Nx-6)*ldy] + coeffs[1]*var[iy + (Nx-5)*ldy] + coeffs[2]*var[iy + (Nx-4)*ldy] + coeffs[3]*var[iy + (Nx-2)*ldy] + coeffs[4]*var[iy + (Nx-1)*ldy] + coeffs[5]*var[iy + (1)*ldy]);
+        dvardx[iy+(Nx-1)*ldy] = 1/dx*(coeffs[0]*var[iy + (Nx-4)*ldy] + coeffs[1]*var[iy + (Nx-3)*ldy] + coeffs[2]*var[iy + (Nx-2)*ldy] + coeffs[3]*var[iy + (0)*ldy] + coeffs[4]*var[iy + (1)*ldy] + coeffs[5]*var[iy + (2)*ldy]);
+        dvardx[iy+(Nx-2)*ldy] = 1/dx*(coeffs[0]*var[iy + (Nx-5)*ldy] + coeffs[1]*var[iy + (Nx-4)*ldy] + coeffs[2]*var[iy + (Nx-3)*ldy] + coeffs[3]*var[iy + (Nx-1)*ldy] + coeffs[4]*var[iy + (0)*ldy] + coeffs[5]*var[iy + (1)*ldy]);
+        dvardx[iy+(Nx-3)*ldy] = 1/dx*(coeffs[0]*var[iy + (Nx-6)*ldy] + coeffs[1]*var[iy + (Nx-5)*ldy] + coeffs[2]*var[iy + (Nx-4)*ldy] + coeffs[3]*var[iy + (Nx-2)*ldy] + coeffs[4]*var[iy + (Nx-1)*ldy] + coeffs[5]*var[iy + (0)*ldy]);
     
         // Inner points
         for (int ix = 3; ix<Nx-3; ix++){
@@ -258,9 +258,9 @@ void ShallowWater::GetDerivativesForLoop(const double* var, double* dvardx, doub
         // Boundary points for iy <3 and iy > Nx-3
         
         // Top points
-        dvardy[0+ix*ldy] = 1/dy*(coeffs[0]*var[ix*ldy + Ny-4] + coeffs[1]*var[ix*ldy + Ny -3] + coeffs[2]*var[ix*ldy + Ny-2] + coeffs[3]*var[ix*ldy+1] + coeffs[4]*var[ix*ldy+2] + coeffs[5]*var[ix*ldy+3]);
-        dvardy[1+ix*ldy] = 1/dy*(coeffs[0]*var[ix*ldy + Ny-3] + coeffs[1]*var[ix*ldy + Ny -2] + coeffs[2]*var[ix*ldy + 0] + coeffs[3]*var[ix*ldy+2] + coeffs[4]*var[ix*ldy+3] + coeffs[5]*var[ix*ldy+4]);
-        dvardy[2+ix*ldy] = 1/dy*(coeffs[0]*var[ix*ldy + Ny-2] + coeffs[1]*var[ix*ldy + 0] + coeffs[2]*var[ix*ldy + 1] + coeffs[3]*var[ix*ldy+3] + coeffs[4]*var[ix*ldy+4] + coeffs[5]*var[ix*ldy+5]);
+        dvardy[0+ix*ldy] = 1/dy*(coeffs[0]*var[ix*ldy + Ny-3] + coeffs[1]*var[ix*ldy + Ny -2] + coeffs[2]*var[ix*ldy + Ny-1] + coeffs[3]*var[ix*ldy+1] + coeffs[4]*var[ix*ldy+2] + coeffs[5]*var[ix*ldy+3]);
+        dvardy[1+ix*ldy] = 1/dy*(coeffs[0]*var[ix*ldy + Ny-2] + coeffs[1]*var[ix*ldy + Ny -1] + coeffs[2]*var[ix*ldy + 0] + coeffs[3]*var[ix*ldy+2] + coeffs[4]*var[ix*ldy+3] + coeffs[5]*var[ix*ldy+4]);
+        dvardy[2+ix*ldy] = 1/dy*(coeffs[0]*var[ix*ldy + Ny-1] + coeffs[1]*var[ix*ldy + 0] + coeffs[2]*var[ix*ldy + 1] + coeffs[3]*var[ix*ldy+3] + coeffs[4]*var[ix*ldy+4] + coeffs[5]*var[ix*ldy+5]);
         
         
         // Bottom points
