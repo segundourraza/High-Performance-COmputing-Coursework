@@ -62,9 +62,23 @@ int main(int argc, char* argv[])
     std::cout << std::endl;
     
     sol1.SetInitialCondition(); 
-
-    sol1.TimeIntegrateForLoop();
-//    sol1.TimeIntegrate();    
+    switch (analysis){
+        case 1: 
+            sol1.TimeIntegrate();    
+            break;
+        case 2:
+            sol1.TimeIntegrateForLoop();
+            break;
+    }
+    
+    int x1 = 88;
+    int y1 = 26;
+    int x2 = 26;
+    int y2 = 21;
+    
+    std::cout << "h[ " << y1 << "," << x1 << "] = " << sol1.geth()[y1 + Ny*x1] << ".\n"; 
+    std::cout << "h[ " << y2 << "," << x2 << "] = " << sol1.geth()[y2 + Ny*x2] << ".\n";
+    
     sol1.WriteFile();
     
     return 0;

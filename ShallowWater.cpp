@@ -1,6 +1,6 @@
 #include "ShallowWater.h"
 
-
+#include <string>
 #include <iostream>
 #include <fstream> 
 #include <cblas.h>
@@ -99,6 +99,7 @@ void ShallowWater::PrintMatrix(const int& N, const double* A, const int& lday, c
 }
 
 void ShallowWater::TimeIntegrateForLoop(){
+    std::string str;
     
     double* kutemp = new double[Nx*Ny];
     double* kvtemp = new double[Nx*Ny];
@@ -209,7 +210,9 @@ void ShallowWater::TimeIntegrateForLoop(){
             kh[node] = -h[node]*dudx[node] - u[node]*dhdx[node] - h[node]*dvdy[node] - v[node]*dhdy[node];
             h[node] = hnew[node] + dt/6 * kh[node];
         }
-        std::cout << (int) (t/dt) << "\ttime steps done out of\t" << (int) (T/dt) << std::endl;
+        str = "Time: " + std::to_string(t) + ". " + std::to_string((int) (t/dt)) + " time steps done out of " + std::to_string((int) (T/dt)) + ".\n";
+        std::cout << std::string(str.length(),'\b');
+        std::cout << str;
     
     }
     delete[] dhdx;
@@ -269,6 +272,8 @@ void ShallowWater::GetDerivativesForLoop(const double* var, double* dvardx, doub
 
 void ShallowWater::TimeIntegrate(){ 
     
+    std::string str;
+    
     // Populate Differentiation matrix (Only Required by BLAS implementation)
     int ldsy = 3*Ny;
     int dimS = ldsy*Nx;
@@ -324,8 +329,9 @@ void ShallowWater::TimeIntegrate(){
         for (int i = 0; i<dimS; i++){
             S[i] = Snew[i] + RK4coeffs[3]*k2[i];
         }
-    
-        std::cout << (int) (t/dt) << " time steps done out of " << (int) (T/dt) << std::endl;
+        std::cout << std::string(str.length(),'\b');
+        str = "Time: " + std::to_string(t) + ". " + std::to_string((int) (t/dt)) + " time steps done out of " + std::to_string((int) (T/dt)) + ".\n";
+        std::cout << str;
     }  
     
     for (int i = 0; i<dimS; i++){
