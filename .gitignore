@@ -1,5 +1,4 @@
 *.mk
-*.h.gch
 *.clang
 *.project
 *.clang-format

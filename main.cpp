@@ -59,7 +59,7 @@ int main(int argc, char* argv[])
     std::cout << std::endl;
     
     sol1.SetInitialCondition(); 
-
+    
     if (analysis == 1){
         std::cout << "BLAS IMPLEMENTATION SELECTED" << std::endl;
         sol1.TimeIntegrate();    
@@ -70,11 +70,6 @@ int main(int argc, char* argv[])
     }
     
     sol1.WriteFile();
-    
-//    int x1 = 88;
-//    int y1 = 26;
-//    int x2 = 26;
-//    int y2 = 21;
     
     
     int y1 = 88;
