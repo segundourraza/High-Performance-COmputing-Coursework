@@ -2,6 +2,7 @@
 
 #include <string>
 #include <iostream>
+#include <iomanip>
 #include <fstream> 
 #include <cblas.h>
 #include <cstdlib>
@@ -64,14 +65,14 @@ void ShallowWater::SetInitialCondition(){// ARRAY OF POINTER TO POINTER WILL BE 
         case 3: 
             for (int i = 0; i<Nx; i++){
                 for (int j = 0; j<Ny; j++){
-                    h[i*Nx + j] = (double) (10 + std::exp(-((i*dx-50)*(i*dx-50) + (j*dy-50)*(j*dy-50))/25));
+                    h[i*Nx + j] = (double) (10 + std::exp(-((i*dx-50)*(i*dx-50) + (j*dy-50)*(j*dy-50))/25.));
                 }
             }
             break;
         case 4: 
             for (int i = 0; i<Nx; i++){
                 for (int j = 0; j<Ny; j++){
-                    h[i*Nx + j] = (double) (10 + std::exp(-((i*dx-25)*(i*dx-25) + (j*dy-25)*(j*dy-25))/25) + std::exp(-((i*dx-75)*(i*dx-75) + (j*dy-75)*(j*dy-75))/25));
+                    h[i*Nx + j] = (double) (10 + std::exp(-((i*dx-25)*(i*dx-25) + (j*dy-25)*(j*dy-25))/25.) + std::exp(-((i*dx-75)*(i*dx-75) + (j*dy-75)*(j*dy-75))/25.));
                 }
             }
             break;
@@ -99,6 +100,7 @@ void ShallowWater::PrintMatrix(const int& N, const double* A, const int& lday, c
 }
 
 void ShallowWater::TimeIntegrateForLoop(){
+    std::cout << std::setprecision(16) << std::fixed;
     std::string str;
     
     double* kutemp = new double[Nx*Ny];
@@ -126,28 +128,26 @@ void ShallowWater::TimeIntegrateForLoop(){
 //    double Kcoeffs[4] = {0, dt/2, dt/2, dt};
     
     // Start integration loop 
-    double t = 0;
-    while (t < T){
-        t += dt; 
+    double t = dt;
+    while (t < T + dt/2){
         
         // Calculate k1 and propagate Snew
         GetDerivativesForLoop(u, dudx, dudy, coeffs);
         GetDerivativesForLoop(v, dvdx, dvdy, coeffs);
         GetDerivativesForLoop(h, dhdx, dhdy, coeffs);
         
-        
-        
         for (int node = 0; node < Nx*Ny; node++){
             ku[node] = -u[node]*dudx[node] - v[node]*dudy[node] - g*dhdx[node];
             unew[node] = u[node] + dt/6 * ku[node];
-            u[node] += dt/2*ku[node];
             
             kv[node] =  -u[node]*dvdx[node] - v[node]*dvdy[node] - g*dhdy[node];
             vnew[node] = v[node] + dt/6 * kv[node];
-            v[node] += dt/2*kv[node];
             
             kh[node] = -h[node]*dudx[node] - u[node]*dhdx[node] - h[node]*dvdy[node] - v[node]*dhdy[node];
             hnew[node] = h[node] + dt/6 * kh[node];
+            
+            u[node] += dt/2*ku[node];
+            v[node] += dt/2*kv[node];
             h[node] += dt/2*kh[node];
         }
         
@@ -160,16 +160,17 @@ void ShallowWater::TimeIntegrateForLoop(){
             kutemp[node] = ku[node];
             ku[node] = -u[node]*dudx[node] - v[node]*dudy[node] - g*dhdx[node];
             unew[node] += dt/3 * ku[node];
-            u[node] += dt/2*ku[node] - dt/2*kutemp[node];
             
             kvtemp[node] = kv[node];
             kv[node] =  -u[node]*dvdx[node] - v[node]*dvdy[node] - g*dhdy[node];
             vnew[node] += dt/3 * kv[node];
-            v[node] += dt/2*kv[node] - dt/2*kvtemp[node];
             
             khtemp[node] = kh[node];
             kh[node] = -h[node]*dudx[node] - u[node]*dhdx[node] - h[node]*dvdy[node] - v[node]*dhdy[node];
             hnew[node] += dt/3 * kh[node];
+            
+            u[node] += dt/2*ku[node] - dt/2*kutemp[node];
+            v[node] += dt/2*kv[node] - dt/2*kvtemp[node];
             h[node] += dt/2*kh[node] - dt/2*khtemp[node];
         }
         
@@ -182,16 +183,17 @@ void ShallowWater::TimeIntegrateForLoop(){
             kutemp[node] = ku[node];
             ku[node] = -u[node]*dudx[node] - v[node]*dudy[node] - g*dhdx[node];
             unew[node] += dt/3 * ku[node];
-            u[node] += dt*ku[node] - dt/2*kutemp[node];
             
             kvtemp[node] = kv[node];
             kv[node] =  -u[node]*dvdx[node] - v[node]*dvdy[node] - g*dhdy[node];
             vnew[node] += dt/3 * kv[node];
-            v[node] += dt*kv[node] - dt/2*kvtemp[node];
             
             khtemp[node] = kh[node];
             kh[node] = -h[node]*dudx[node] - u[node]*dhdx[node] - h[node]*dvdy[node] - v[node]*dhdy[node];
             hnew[node] +=dt/3 * kh[node];
+            
+            u[node] += dt*ku[node] - dt/2*kutemp[node];
+            v[node] += dt*kv[node] - dt/2*kvtemp[node];
             h[node] += dt*kh[node] - dt/2*khtemp[node];
         }
         
@@ -202,19 +204,25 @@ void ShallowWater::TimeIntegrateForLoop(){
         
         for (int node = 0; node < Nx*Ny; node++){
             ku[node] = -u[node]*dudx[node] - v[node]*dudy[node] - g*dhdx[node];
-            u[node] = unew[node] + dt/6 * ku[node];
         
             kv[node] =  -u[node]*dvdx[node] - v[node]*dvdy[node] - g*dhdy[node];
-            v[node] = vnew[node] + dt/6 * kv[node];
+            
             
             kh[node] = -h[node]*dudx[node] - u[node]*dhdx[node] - h[node]*dvdy[node] - v[node]*dhdy[node];
+            
+            u[node] = unew[node] + dt/6 * ku[node];
+            v[node] = vnew[node] + dt/6 * kv[node];
             h[node] = hnew[node] + dt/6 * kh[node];
         }
         str = "Time: " + std::to_string(t) + ". " + std::to_string((int) (t/dt)) + " time steps done out of " + std::to_string((int) (T/dt)) + ".\n";
         std::cout << std::string(str.length(),'\b');
         std::cout << str;
-    
+        
+        t += dt; 
     }
+    
+    
+    
     delete[] dhdx;
     delete[] dhdy;
     delete[] dudx;
@@ -259,7 +267,7 @@ void ShallowWater::GetDerivativesForLoop(const double* var, double* dvardx, doub
         
         
         // Bottom points
-        dvardy[Ny-1+ix*ldy] = coeffs[0]*var[ix*ldy + Ny-4] + coeffs[1]*var[ix*ldy + Ny -3] + coeffs[2]*var[ix*ldy + Ny-2] + coeffs[3]*var[ix*ldy+0] + coeffs[4]*var[ix*ldy +0] + coeffs[5]*var[ix*ldy +0];
+        dvardy[Ny-1+ix*ldy] = coeffs[0]*var[ix*ldy + Ny-4] + coeffs[1]*var[ix*ldy + Ny -3] + coeffs[2]*var[ix*ldy + Ny-2] + coeffs[3]*var[ix*ldy+0] + coeffs[4]*var[ix*ldy +1] + coeffs[5]*var[ix*ldy +2];
         dvardy[Ny-2+ix*ldy] = coeffs[0]*var[ix*ldy + Ny-5] + coeffs[1]*var[ix*ldy + Ny -4] + coeffs[2]*var[ix*ldy + Ny-3] + coeffs[3]*var[ix*ldy+Ny-1] + coeffs[4]*var[ix*ldy +0] + coeffs[5]*var[ix*ldy +1];
         dvardy[Ny-3+ix*ldy] = coeffs[0]*var[ix*ldy + Ny-6] + coeffs[1]*var[ix*ldy + Ny -5] + coeffs[2]*var[ix*ldy + Ny-4] + coeffs[3]*var[ix*ldy+Ny-2] + coeffs[4]*var[ix*ldy + Ny-1] + coeffs[5]*var[ix*ldy + 0];
         
