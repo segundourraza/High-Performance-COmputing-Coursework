@@ -71,9 +71,17 @@ int main(int argc, char* argv[])
     
     sol1.WriteFile();
     
-    int x = 27;
-    int y = 89;
-    std::cout << std::setprecision (10) << std::fixed << "h[" << x << "," << y << "] = " << *(sol1.geth() + y +Ny*x) << std::endl;
-    std::cout << std::setprecision (10) << std::fixed << "h[" << y/4 << "," << x << "] = " << *(sol1.geth() + x +Ny*y/4) << std::endl;
+//    int x1 = 88;
+//    int y1 = 26;
+//    int x2 = 26;
+//    int y2 = 21;
+    
+    
+    int y1 = 88;
+    int x1 = 26;
+    int y2 = 26;
+    int x2 = 21;
+    std::cout << std::setprecision (16) << std::fixed << "h[" << y1 << "," << x1 << "] = " << *(sol1.geth() + y1 +Ny*(x1)) << std::endl;
+    std::cout << std::setprecision (16) << std::fixed << "h[" << y2 << "," << x2 << "] = " << *(sol1.geth() + y2 +Ny*x2) << std::endl;
     return 0;
 }
