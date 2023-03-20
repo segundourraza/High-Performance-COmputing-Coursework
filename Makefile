@@ -1,7 +1,7 @@
 CXX = g++
 CXXFLAGS = -Wall -O0 -g
 HDRS = ShallowWater.h
-LIBS = -lblas -lboost_program_options
+LIBS = -lblas -lboost_program_options -fopenmp
 OBJS = main.o ShallowWater.o
 TARGET = main
 

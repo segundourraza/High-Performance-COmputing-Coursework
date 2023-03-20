@@ -21,8 +21,8 @@ class ShallowWater
     double* v = nullptr;
     
     
-    double* B = nullptr;
-    double* C =nullptr;
+    double* B = new double[5*3*Ny*Nx];
+    double* C = new double[3*3*Ny*Nx];
     
     void PopulateA(const int& N, double* A, const int& lda, const double* coeffs);
     void ConstructSVector(double* S);

@@ -105,6 +105,13 @@ void ShallowWater::TimeIntegrateForLoop(){
     std::cout << std::setprecision(16) << std::fixed;
     std::string str;
     
+    int threadid;
+    int NumThreads;
+    
+    int nodes = Nx*Ny;
+    int local_n;
+    int reminder =0;
+    
     double* kutemp = new double[Nx*Ny];
     double* kvtemp = new double[Nx*Ny];
     double* khtemp = new double[Nx*Ny];    
@@ -127,95 +134,112 @@ void ShallowWater::TimeIntegrateForLoop(){
     
     double coeffs[6] = {-0.016667, 0.15, -0.75, 0.75, -0.15, 0.016667};
     
-    // Start integration loop 
-    double t = dt;
-    while (t < T + dt/2){
-        
-        // Calculate k1 and propagate Snew
-        GetDerivativesForLoop(u, dudx, dudy, coeffs);
-        GetDerivativesForLoop(v, dvdx, dvdy, coeffs);
-        GetDerivativesForLoop(h, dhdx, dhdy, coeffs);
-        
-        for (int node = 0; node < Nx*Ny; node++){
-            ku[node] = -u[node]*dudx[node] - v[node]*dudy[node] - g*dhdx[node];
-            unew[node] = u[node] + dt/6 * ku[node];
+    // Open branch of threads
+    #pragma omp parallel default(shared) private(threadid) 
+    {
+        threadid = omp_get_thread_num();
+        if (threadid == 0){
+            NumThreads = omp_get_num_threads();
+            local_n = nodes/NumThreads;
+            reminder = nodes - local_n*NumThreads;
+            std::cout << "Number of threads: " << NumThreads << "." << std::endl;
+            std::cout << "Number of nodes: " << nodes << "." << std::endl;
+            std::cout << "Number of nodes per thread: " << local_n << "." << std::endl;
+            std::cout << "Number of reminding nodes: " << reminder << "." << std::endl;
             
-            kv[node] =  -u[node]*dvdx[node] - v[node]*dvdy[node] - g*dhdy[node];
-            vnew[node] = v[node] + dt/6 * kv[node];
-            
-            kh[node] = -h[node]*dudx[node] - u[node]*dhdx[node] - h[node]*dvdy[node] - v[node]*dhdy[node];
-            hnew[node] = h[node] + dt/6 * kh[node];
-            
-            u[node] += dt/2*ku[node];
-            v[node] += dt/2*kv[node];
-            h[node] += dt/2*kh[node];
         }
+        #pragma omp barrier
         
-        // Calculate k2 and propagate Snew
-        GetDerivativesForLoop(u, dudx, dudy, coeffs);
-        GetDerivativesForLoop(v, dvdx, dvdy, coeffs);
-        GetDerivativesForLoop(h, dhdx, dhdy, coeffs);
-        
-        for (int node = 0; node < Nx*Ny; node++){
-            kutemp[node] = ku[node];
-            ku[node] = -u[node]*dudx[node] - v[node]*dudy[node] - g*dhdx[node];
-            unew[node] += dt/3 * ku[node];
+        // Start integration loop 
+        double t = dt;
+        while (t < T + dt/2){
             
-            kvtemp[node] = kv[node];
-            kv[node] =  -u[node]*dvdx[node] - v[node]*dvdy[node] - g*dhdy[node];
-            vnew[node] += dt/3 * kv[node];
+            // Calculate k1 and propagate Snew
+            GetDerivativesForLoop(u, dudx, dudy, coeffs);
+            GetDerivativesForLoop(v, dvdx, dvdy, coeffs);
+            GetDerivativesForLoop(h, dhdx, dhdy, coeffs);
             
-            khtemp[node] = kh[node];
-            kh[node] = -h[node]*dudx[node] - u[node]*dhdx[node] - h[node]*dvdy[node] - v[node]*dhdy[node];
-            hnew[node] += dt/3 * kh[node];
+            for (int node = 0; node < Nx*Ny; node++){
+                ku[node] = -u[node]*dudx[node] - v[node]*dudy[node] - g*dhdx[node];
+                unew[node] = u[node] + dt/6 * ku[node];
+                
+                kv[node] =  -u[node]*dvdx[node] - v[node]*dvdy[node] - g*dhdy[node];
+                vnew[node] = v[node] + dt/6 * kv[node];
+                
+                kh[node] = -h[node]*dudx[node] - u[node]*dhdx[node] - h[node]*dvdy[node] - v[node]*dhdy[node];
+                hnew[node] = h[node] + dt/6 * kh[node];
+                
+                u[node] += dt/2*ku[node];
+                v[node] += dt/2*kv[node];
+                h[node] += dt/2*kh[node];
+            }
             
-            u[node] += dt/2*ku[node] - dt/2*kutemp[node];
-            v[node] += dt/2*kv[node] - dt/2*kvtemp[node];
-            h[node] += dt/2*kh[node] - dt/2*khtemp[node];
+            // Calculate k2 and propagate Snew
+            GetDerivativesForLoop(u, dudx, dudy, coeffs);
+            GetDerivativesForLoop(v, dvdx, dvdy, coeffs);
+            GetDerivativesForLoop(h, dhdx, dhdy, coeffs);
+            
+            for (int node = 0; node < Nx*Ny; node++){
+                kutemp[node] = ku[node];
+                ku[node] = -u[node]*dudx[node] - v[node]*dudy[node] - g*dhdx[node];
+                unew[node] += dt/3 * ku[node];
+                
+                kvtemp[node] = kv[node];
+                kv[node] =  -u[node]*dvdx[node] - v[node]*dvdy[node] - g*dhdy[node];
+                vnew[node] += dt/3 * kv[node];
+                
+                khtemp[node] = kh[node];
+                kh[node] = -h[node]*dudx[node] - u[node]*dhdx[node] - h[node]*dvdy[node] - v[node]*dhdy[node];
+                hnew[node] += dt/3 * kh[node];
+                
+                u[node] += dt/2*ku[node] - dt/2*kutemp[node];
+                v[node] += dt/2*kv[node] - dt/2*kvtemp[node];
+                h[node] += dt/2*kh[node] - dt/2*khtemp[node];
+            }
+            
+            // Calculate k3 and propagate Snew
+            GetDerivativesForLoop(u, dudx, dudy, coeffs);
+            GetDerivativesForLoop(v, dvdx, dvdy, coeffs);
+            GetDerivativesForLoop(h, dhdx, dhdy, coeffs);
+            
+            for (int node = 0; node < Nx*Ny; node++){
+                kutemp[node] = ku[node];
+                ku[node] = -u[node]*dudx[node] - v[node]*dudy[node] - g*dhdx[node];
+                unew[node] += dt/3 * ku[node];
+                
+                kvtemp[node] = kv[node];
+                kv[node] =  -u[node]*dvdx[node] - v[node]*dvdy[node] - g*dhdy[node];
+                vnew[node] += dt/3 * kv[node];
+                
+                khtemp[node] = kh[node];
+                kh[node] = -h[node]*dudx[node] - u[node]*dhdx[node] - h[node]*dvdy[node] - v[node]*dhdy[node];
+                hnew[node] +=dt/3 * kh[node];
+                
+                u[node] += dt*ku[node] - dt/2*kutemp[node];
+                v[node] += dt*kv[node] - dt/2*kvtemp[node];
+                h[node] += dt*kh[node] - dt/2*khtemp[node];
+            }
+            
+            // Calculate k4 and propagate Snew
+            GetDerivativesForLoop(u, dudx, dudy, coeffs);
+            GetDerivativesForLoop(v, dvdx, dvdy, coeffs);
+            GetDerivativesForLoop(h, dhdx, dhdy, coeffs);
+            
+            for (int node = 0; node < Nx*Ny; node++){
+                ku[node] = -u[node]*dudx[node] - v[node]*dudy[node] - g*dhdx[node];
+                kv[node] =  -u[node]*dvdx[node] - v[node]*dvdy[node] - g*dhdy[node];
+                kh[node] = -h[node]*dudx[node] - u[node]*dhdx[node] - h[node]*dvdy[node] - v[node]*dhdy[node];
+                
+                u[node] = unew[node] + dt/6 * ku[node];
+                v[node] = vnew[node] + dt/6 * kv[node];
+                h[node] = hnew[node] + dt/6 * kh[node];
+            }
+            std::cout << std::string(str.length(),'\b');
+            str = "Time: " + std::to_string(t) + ". " + std::to_string((int) ((t)/dt)) + " time steps done out of " + std::to_string((int) (T/dt)) + ".";
+            std::cout << str;
+            
+            t += dt; 
         }
-        
-        // Calculate k3 and propagate Snew
-        GetDerivativesForLoop(u, dudx, dudy, coeffs);
-        GetDerivativesForLoop(v, dvdx, dvdy, coeffs);
-        GetDerivativesForLoop(h, dhdx, dhdy, coeffs);
-        
-        for (int node = 0; node < Nx*Ny; node++){
-            kutemp[node] = ku[node];
-            ku[node] = -u[node]*dudx[node] - v[node]*dudy[node] - g*dhdx[node];
-            unew[node] += dt/3 * ku[node];
-            
-            kvtemp[node] = kv[node];
-            kv[node] =  -u[node]*dvdx[node] - v[node]*dvdy[node] - g*dhdy[node];
-            vnew[node] += dt/3 * kv[node];
-            
-            khtemp[node] = kh[node];
-            kh[node] = -h[node]*dudx[node] - u[node]*dhdx[node] - h[node]*dvdy[node] - v[node]*dhdy[node];
-            hnew[node] +=dt/3 * kh[node];
-            
-            u[node] += dt*ku[node] - dt/2*kutemp[node];
-            v[node] += dt*kv[node] - dt/2*kvtemp[node];
-            h[node] += dt*kh[node] - dt/2*khtemp[node];
-        }
-        
-        // Calculate k4 and propagate Snew
-        GetDerivativesForLoop(u, dudx, dudy, coeffs);
-        GetDerivativesForLoop(v, dvdx, dvdy, coeffs);
-        GetDerivativesForLoop(h, dhdx, dhdy, coeffs);
-        
-        for (int node = 0; node < Nx*Ny; node++){
-            ku[node] = -u[node]*dudx[node] - v[node]*dudy[node] - g*dhdx[node];
-            kv[node] =  -u[node]*dvdx[node] - v[node]*dvdy[node] - g*dhdy[node];
-            kh[node] = -h[node]*dudx[node] - u[node]*dhdx[node] - h[node]*dvdy[node] - v[node]*dhdy[node];
-            
-            u[node] = unew[node] + dt/6 * ku[node];
-            v[node] = vnew[node] + dt/6 * kv[node];
-            h[node] = hnew[node] + dt/6 * kh[node];
-        }
-        std::cout << std::string(str.length(),'\b');
-        str = "Time: " + std::to_string(t) + ". " + std::to_string((int) ((t)/dt)) + " time steps done out of " + std::to_string((int) (T/dt)) + ".";
-        std::cout << str;
-        
-        t += dt; 
     }
     
     delete[] kutemp;
@@ -259,11 +283,11 @@ void ShallowWater::GetDerivativesForLoop(const double* var, double* dvardx, doub
         dvardx[iy+(Nx-3)*ldy] = coeffs[0]*var[iy + (Nx-6)*ldy] + coeffs[1]*var[iy + (Nx-5)*ldy] + coeffs[2]*var[iy + (Nx-4)*ldy] + coeffs[3]*var[iy + (Nx-2)*ldy] + coeffs[4]*var[iy + (Nx-1)*ldy] + coeffs[5]*var[iy + (1)*ldy];
     
         // Inner points
-        #pragma omp parallel for
         for (int ix = 3; ix<Nx-3; ix++){
             dvardx[iy+ldy*ix] = coeffs[0]*var[iy + (ix-3)*ldy] + coeffs[1]*var[iy + (ix-2)*ldy] + coeffs[2]*var[iy + (ix-1)*ldy] + coeffs[3]*var[iy + (ix+1)*ldy] + coeffs[4]*var[iy + (ix+2)*ldy] + coeffs[5]*var[iy + (ix+3)*ldy];
         }
     }
+        
     // Y - DERIVATVES
     
     for (int ix = 0; ix < Nx; ix++){
