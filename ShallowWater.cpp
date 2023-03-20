@@ -7,6 +7,8 @@
 #include <cblas.h>
 #include <cstdlib>
 
+#include <omp.h>
+
 #define g 9.81
 
 // constructor definition
@@ -124,8 +126,6 @@ void ShallowWater::TimeIntegrateForLoop(){
     double* kh = new double[Nx*Ny];
     
     double coeffs[6] = {-0.016667, 0.15, -0.75, 0.75, -0.15, 0.016667};
-//    double RK4[4] = {dt/6, dt/3, dt/3, dt/6};
-//    double Kcoeffs[4] = {0, dt/2, dt/2, dt};
     
     // Start integration loop 
     double t = dt;
@@ -212,20 +212,31 @@ void ShallowWater::TimeIntegrateForLoop(){
             h[node] = hnew[node] + dt/6 * kh[node];
         }
         std::cout << std::string(str.length(),'\b');
-        str = "Time: " + std::to_string(t) + ". " + std::to_string((int) (t/dt)) + " time steps done out of " + std::to_string((int) (T/dt)) + ".";
+        str = "Time: " + std::to_string(t) + ". " + std::to_string((int) ((t)/dt)) + " time steps done out of " + std::to_string((int) (T/dt)) + ".";
         std::cout << str;
         
         t += dt; 
     }
     
+    delete[] kutemp;
+    delete[] kvtemp;
+    delete[] khtemp;
     
+    delete[] unew;
+    delete[] vnew;
+    delete[] hnew;
     
     delete[] dhdx;
-    delete[] dhdy;
     delete[] dudx;
-    delete[] dudy;
     delete[] dvdx;
+
+    delete[] dhdy;
+    delete[] dudy;
     delete[] dvdy;
+
+    delete[] ku;
+    delete[] kv;
+    delete[] kh;
     
 }
 
@@ -248,6 +259,7 @@ void ShallowWater::GetDerivativesForLoop(const double* var, double* dvardx, doub
         dvardx[iy+(Nx-3)*ldy] = coeffs[0]*var[iy + (Nx-6)*ldy] + coeffs[1]*var[iy + (Nx-5)*ldy] + coeffs[2]*var[iy + (Nx-4)*ldy] + coeffs[3]*var[iy + (Nx-2)*ldy] + coeffs[4]*var[iy + (Nx-1)*ldy] + coeffs[5]*var[iy + (1)*ldy];
     
         // Inner points
+        #pragma omp parallel for
         for (int ix = 3; ix<Nx-3; ix++){
             dvardx[iy+ldy*ix] = coeffs[0]*var[iy + (ix-3)*ldy] + coeffs[1]*var[iy + (ix-2)*ldy] + coeffs[2]*var[iy + (ix-1)*ldy] + coeffs[3]*var[iy + (ix+1)*ldy] + coeffs[4]*var[iy + (ix+2)*ldy] + coeffs[5]*var[iy + (ix+3)*ldy];
         }
@@ -278,6 +290,9 @@ void ShallowWater::GetDerivativesForLoop(const double* var, double* dvardx, doub
 void ShallowWater::TimeIntegrate(){ 
     
     std::string str;
+    
+    B = new double[5*3*Ny*Nx];
+    C = new double[3*3*Nx*Ny];
     
     // Populate Differentiation matrix (Only Required by BLAS implementation)
     int ldsy = 3*Ny;
@@ -345,6 +360,9 @@ void ShallowWater::TimeIntegrate(){
         v[i/3] = S[i+1];
         h[i/3] = S[i+2];
     }
+    
+    delete[] B;
+    delete[] C;
 }
 
 void ShallowWater::EvaluateFuncBlasV2(const int& kla, const int& kua, const double* A, const int& lday, double* S, const int& ldsy, const double* coeffs, double* k){
