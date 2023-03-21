@@ -52,7 +52,7 @@ void ShallowWater::SetInitialCondition(){// ARRAY OF POINTER TO POINTER WILL BE 
                 for (int j = 0; j<Ny; j++){
 //                    g[i][j] = (double) (std::exp(-(i*dx-50)*(i*dx-50)/25));
 //                    g[i][j] = i+1 + (j+1)*10;
-                    h[i*Nx + j] = (double) (10 + std::exp(-(i*dx-Nx/2.)*(i*dx-Nx/2.)/(Nx/4.)));
+                    h[i*Ny + j] = (double) (10 + std::exp(-(i*dx-Nx/2.)*(i*dx-Nx/2.)/(Nx/4.)));
                 }
             }
             break;
@@ -60,21 +60,21 @@ void ShallowWater::SetInitialCondition(){// ARRAY OF POINTER TO POINTER WILL BE 
             for (int i = 0; i<Nx; i++){
                 for (int j = 0; j<Ny; j++){
 //                    h[i*Nx + j] = (double) ( std::exp(-(j*dy-50)*(j*dy-50)/25));
-                    h[i*Nx + j] = (double) (10+ std::exp(-(j*dy-Nx/2)*(j*dy-Nx/2)/(Nx/4)));
+                    h[i*Ny + j] = (double) (10+ std::exp(-(j*dy-Nx/2)*(j*dy-Nx/2)/(Nx/4)));
                 }
             }
             break;
         case 3: 
             for (int i = 0; i<Nx; i++){
                 for (int j = 0; j<Ny; j++){
-                    h[i*Nx + j] = (double) (10 + std::exp(-((i*dx-50)*(i*dx-50) + (j*dy-50)*(j*dy-50))/25.));
+                    h[i*Ny + j] = (double) (10 + std::exp(-((i*dx-50)*(i*dx-50) + (j*dy-50)*(j*dy-50))/25.));
                 }
             }
             break;
         case 4: 
             for (int i = 0; i<Nx; i++){
                 for (int j = 0; j<Ny; j++){
-                    h[i*Nx + j] = (double) (10 + std::exp(-((i*dx-25)*(i*dx-25) + (j*dy-25)*(j*dy-25))/25.) + std::exp(-((i*dx-75)*(i*dx-75) + (j*dy-75)*(j*dy-75))/25.));
+                    h[i*Ny + j] = (double) (10 + std::exp(-((i*dx-25)*(i*dx-25) + (j*dy-25)*(j*dy-25))/25.) + std::exp(-((i*dx-75)*(i*dx-75) + (j*dy-75)*(j*dy-75))/25.));
                 }
             }
             break;
@@ -101,16 +101,22 @@ void ShallowWater::PrintMatrix(const int& N, const double* A, const int& lday, c
     }
 }
 
-void ShallowWater::TimeIntegrateForLoop(){
+void ShallowWater::TimeIntegrateParallel(){
     std::cout << std::setprecision(16) << std::fixed;
     std::string str;
     
     int threadid;
     int NumThreads;
     
-    int nodes = Nx*Ny;
-    int local_n;
-    int reminder =0;
+    int remainder_col =0;
+    int remainder_row = 0;
+    int local_col, local_row;
+    
+    int* cumsum_col = nullptr;
+    int* cumsum_row = nullptr;
+    
+    int* additional_col = nullptr;
+    int* additional_row = nullptr;
     
     double* kutemp = new double[Nx*Ny];
     double* kvtemp = new double[Nx*Ny];
@@ -134,32 +140,101 @@ void ShallowWater::TimeIntegrateForLoop(){
     
     double coeffs[6] = {-0.016667, 0.15, -0.75, 0.75, -0.15, 0.016667};
     
+
     // Open branch of threads
     #pragma omp parallel default(shared) private(threadid) 
     {
         threadid = omp_get_thread_num();
         if (threadid == 0){
             NumThreads = omp_get_num_threads();
-            local_n = nodes/NumThreads;
-            reminder = nodes - local_n*NumThreads;
-            std::cout << "Number of threads: " << NumThreads << "." << std::endl;
-            std::cout << "Number of nodes: " << nodes << "." << std::endl;
-            std::cout << "Number of nodes per thread: " << local_n << "." << std::endl;
-            std::cout << "Number of reminding nodes: " << reminder << "." << std::endl;
+                        
+            remainder_col = Nx%NumThreads;
+            local_col = (Nx - remainder_col)/NumThreads;
             
+            remainder_row = Ny%NumThreads;
+            local_row = (Ny - remainder_row)/NumThreads;
+            
+            std::cout << "\nNumber of threads = " << NumThreads << std::endl;
+            std::cout << "Number of columns = " << Nx << std::endl;
+            std::cout << "Number of rows = " << Ny << std::endl;
+            std::cout << "\nRemainding columns  = " << remainder_col << std::endl;
+            std::cout << "Columns per thread = " << local_col << std::endl;
+            std::cout << remainder_col << " threads must do an additional column." << std::endl;
+            std::cout << "Total columns = " << (local_col*(NumThreads-remainder_col) +  (local_col +1)*remainder_col) << "\n" << std::endl;
+            std::cout << "\nRemainding rows  = " << remainder_row << std::endl;
+            std::cout << "Rows per thread = " << local_row << std::endl;
+            std::cout << remainder_row << " threads must do an additional column." << std::endl;
+            std::cout << "Total columns = " << (local_row*(NumThreads-remainder_row) +  (local_row +1)*remainder_row) << "\n" << std::endl;
+            
+            // Populating initial pointer shifting array due to reaminder of columns
+            cumsum_col = new int[NumThreads];
+            additional_col = new int[NumThreads];
+            for (int i = 1 ; i < remainder_col+1; i++){
+                additional_col[i-1] = 1;
+                cumsum_col[i] = cumsum_col[i-1] + local_col + 1;
+            }
+            
+            for (int i = remainder_col+1; i<NumThreads; i++){
+                cumsum_col[i] = cumsum_col[i-1] + local_col;
+                additional_col[i-1] = 0;
+            }
+            
+            
+            
+            for (int i = 0; i<NumThreads; i++){
+                std::cout << cumsum_col[i] << ",\t" ;
+            }
+            std::cout << std::endl;
+            for (int i = 0; i<NumThreads; i++){
+                std::cout << additional_col[i] << ",\t" ;
+            }
+            std::cout << std::endl;
+            std::cout << std::endl;
+            
+            
+            
+            // Same for rows
+            cumsum_row = new int[NumThreads];
+            additional_row = new int[NumThreads];
+            for (int i = 1 ; i < remainder_col+1; i++){
+                additional_row[i-1] = 1;
+                cumsum_row[i] = cumsum_row[i-1] + local_row + 1;
+            }
+            
+            for (int i = remainder_col+1; i<NumThreads; i++){
+                cumsum_row[i] = cumsum_row[i-1] + local_row;
+                additional_row[i-1] = 0;
+            }
+            
+            for (int i = 0; i<NumThreads; i++){
+                std::cout << cumsum_row[i] << ",\t" ;
+            }
+            std::cout << std::endl;for (int i = 0; i<NumThreads; i++){
+                std::cout << additional_row[i] << ",\t" ;
+            }
+            std::cout << std::endl;
+            std::cout << std::endl;
         }
         #pragma omp barrier
         
         // Start integration loop 
         double t = dt;
         while (t < T + dt/2){
+            #pragma omp critical
+            {
+            std::cout << "THREAD #" << threadid << ": STARTING COLUMN VALUE OF h = " << h[(cumsum_col[threadid])*Ny] << std::endl;
+            std::cout << "THREAD #" << threadid << ": STARTING ROW VALUE OF h = " << h[(cumsum_row[threadid])] << std::endl;
+            std::cout << std::endl;
+            }
             
             // Calculate k1 and propagate Snew
-            GetDerivativesForLoop(u, dudx, dudy, coeffs);
-            GetDerivativesForLoop(v, dvdx, dvdy, coeffs);
-            GetDerivativesForLoop(h, dhdx, dhdy, coeffs);
+            GetDerivativesParallel(local_row+additional_row[threadid], local_col + additional_col[threadid], u + (cumsum_row[threadid]),u + (cumsum_col[threadid])*Ny,  dudx + (cumsum_row[threadid]), dudy + (cumsum_col[threadid])*Ny, coeffs);
+            GetDerivativesParallel(local_row+additional_row[threadid], local_col + additional_col[threadid], v + (cumsum_row[threadid]),v + (cumsum_col[threadid])*Ny,  dvdx + (cumsum_row[threadid]), dvdy + (cumsum_col[threadid])*Ny, coeffs);
+            GetDerivativesParallel(local_row+additional_row[threadid], local_col + additional_col[threadid], h + (cumsum_row[threadid]),h + (cumsum_col[threadid])*Ny,  dhdx + (cumsum_row[threadid]), dhdy + (cumsum_col[threadid])*Ny, coeffs);
             
-            for (int node = 0; node < Nx*Ny; node++){
+            #pragma omp barrier
+            
+            for (int node = (cumsum_col[threadid])*Ny; node < (cumsum_col[threadid] + local_col + additional_col[threadid])*Ny; node++){
                 ku[node] = -u[node]*dudx[node] - v[node]*dudy[node] - g*dhdx[node];
                 unew[node] = u[node] + dt/6 * ku[node];
                 
@@ -172,14 +247,18 @@ void ShallowWater::TimeIntegrateForLoop(){
                 u[node] += dt/2*ku[node];
                 v[node] += dt/2*kv[node];
                 h[node] += dt/2*kh[node];
-            }
+            }            
+            
+            #pragma omp barrier
             
             // Calculate k2 and propagate Snew
-            GetDerivativesForLoop(u, dudx, dudy, coeffs);
-            GetDerivativesForLoop(v, dvdx, dvdy, coeffs);
-            GetDerivativesForLoop(h, dhdx, dhdy, coeffs);
+            GetDerivativesParallel(local_row+additional_row[threadid], local_col + additional_col[threadid], u + (cumsum_row[threadid]),u + (cumsum_col[threadid])*Ny,  dudx + (cumsum_row[threadid]), dudy + (cumsum_col[threadid])*Ny, coeffs);
+            GetDerivativesParallel(local_row+additional_row[threadid], local_col + additional_col[threadid], v + (cumsum_row[threadid]),v + (cumsum_col[threadid])*Ny,  dvdx + (cumsum_row[threadid]), dvdy + (cumsum_col[threadid])*Ny, coeffs);
+            GetDerivativesParallel(local_row+additional_row[threadid], local_col + additional_col[threadid], h + (cumsum_row[threadid]),h + (cumsum_col[threadid])*Ny,  dhdx + (cumsum_row[threadid]), dhdy + (cumsum_col[threadid])*Ny, coeffs);
             
-            for (int node = 0; node < Nx*Ny; node++){
+            #pragma omp barrier
+            
+            for (int node = (cumsum_col[threadid])*Ny; node < (cumsum_col[threadid] + local_col + additional_col[threadid])*Ny; node++){
                 kutemp[node] = ku[node];
                 ku[node] = -u[node]*dudx[node] - v[node]*dudy[node] - g*dhdx[node];
                 unew[node] += dt/3 * ku[node];
@@ -196,13 +275,16 @@ void ShallowWater::TimeIntegrateForLoop(){
                 v[node] += dt/2*kv[node] - dt/2*kvtemp[node];
                 h[node] += dt/2*kh[node] - dt/2*khtemp[node];
             }
+            #pragma omp barrier
             
             // Calculate k3 and propagate Snew
-            GetDerivativesForLoop(u, dudx, dudy, coeffs);
-            GetDerivativesForLoop(v, dvdx, dvdy, coeffs);
-            GetDerivativesForLoop(h, dhdx, dhdy, coeffs);
+            GetDerivativesParallel(local_row+additional_row[threadid], local_col + additional_col[threadid], u + (cumsum_row[threadid]),u + (cumsum_col[threadid])*Ny,  dudx + (cumsum_row[threadid]), dudy + (cumsum_col[threadid])*Ny, coeffs);
+            GetDerivativesParallel(local_row+additional_row[threadid], local_col + additional_col[threadid], v + (cumsum_row[threadid]),v + (cumsum_col[threadid])*Ny,  dvdx + (cumsum_row[threadid]), dvdy + (cumsum_col[threadid])*Ny, coeffs);
+            GetDerivativesParallel(local_row+additional_row[threadid], local_col + additional_col[threadid], h + (cumsum_row[threadid]),h + (cumsum_col[threadid])*Ny,  dhdx + (cumsum_row[threadid]), dhdy + (cumsum_col[threadid])*Ny, coeffs);
             
-            for (int node = 0; node < Nx*Ny; node++){
+            #pragma omp barrier
+            
+            for (int node = (cumsum_col[threadid])*Ny; node < (cumsum_col[threadid] + local_col + additional_col[threadid])*Ny; node++){
                 kutemp[node] = ku[node];
                 ku[node] = -u[node]*dudx[node] - v[node]*dudy[node] - g*dhdx[node];
                 unew[node] += dt/3 * ku[node];
@@ -220,12 +302,16 @@ void ShallowWater::TimeIntegrateForLoop(){
                 h[node] += dt*kh[node] - dt/2*khtemp[node];
             }
             
-            // Calculate k4 and propagate Snew
-            GetDerivativesForLoop(u, dudx, dudy, coeffs);
-            GetDerivativesForLoop(v, dvdx, dvdy, coeffs);
-            GetDerivativesForLoop(h, dhdx, dhdy, coeffs);
+            #pragma omp barrier
             
-            for (int node = 0; node < Nx*Ny; node++){
+            // Calculate k3 and propagate Snew
+            GetDerivativesParallel(local_row+additional_row[threadid], local_col + additional_col[threadid], u + (cumsum_row[threadid]),u + (cumsum_col[threadid])*Ny,  dudx + (cumsum_row[threadid]), dudy + (cumsum_col[threadid])*Ny, coeffs);
+            GetDerivativesParallel(local_row+additional_row[threadid], local_col + additional_col[threadid], v + (cumsum_row[threadid]),v + (cumsum_col[threadid])*Ny,  dvdx + (cumsum_row[threadid]), dvdy + (cumsum_col[threadid])*Ny, coeffs);
+            GetDerivativesParallel(local_row+additional_row[threadid], local_col + additional_col[threadid], h + (cumsum_row[threadid]),h + (cumsum_col[threadid])*Ny,  dhdx + (cumsum_row[threadid]), dhdy + (cumsum_col[threadid])*Ny, coeffs);
+            
+            #pragma omp barrier
+            
+            for (int node = (cumsum_col[threadid])*Ny; node < (cumsum_col[threadid] + local_col + additional_col[threadid])*Ny; node++){
                 ku[node] = -u[node]*dudx[node] - v[node]*dudy[node] - g*dhdx[node];
                 kv[node] =  -u[node]*dvdx[node] - v[node]*dvdy[node] - g*dhdy[node];
                 kh[node] = -h[node]*dudx[node] - u[node]*dhdx[node] - h[node]*dvdy[node] - v[node]*dhdy[node];
@@ -234,12 +320,202 @@ void ShallowWater::TimeIntegrateForLoop(){
                 v[node] = vnew[node] + dt/6 * kv[node];
                 h[node] = hnew[node] + dt/6 * kh[node];
             }
+            
             std::cout << std::string(str.length(),'\b');
             str = "Time: " + std::to_string(t) + ". " + std::to_string((int) ((t)/dt)) + " time steps done out of " + std::to_string((int) (T/dt)) + ".";
             std::cout << str;
             
-            t += dt; 
+            t+=dt;
         }
+    }
+
+    std::cout << "FINISHED TIME LOOP"<< std::endl;
+
+    
+    delete[] kutemp;
+    delete[] kvtemp;
+    delete[] khtemp;
+    
+    delete[] unew;
+    delete[] vnew;
+    delete[] hnew;
+    
+    delete[] dhdx;
+    delete[] dudx;
+    delete[] dvdx;
+
+    delete[] dhdy;
+    delete[] dudy;
+    delete[] dvdy;
+
+    delete[] ku;
+    delete[] kv;
+    delete[] kh;
+            
+}
+
+void ShallowWater::GetDerivativesParallel(const int& rows, const int& cols, const double* varx, const double* vary,  double* dvardx, double* dvardy, const double* coeffs){
+     // Calculate derivatives in direction x and y (ASSUME SQUARE)
+    int ldy = Ny;    
+    
+    // X - DERIVATIVES
+    for (int iy = 0; iy < rows; iy++){
+        // Boundary points for ix <3 and ix > Nx-3
+        
+        // Left most points
+        dvardx[iy] = coeffs[0]*varx[iy + (Nx-4)*ldy] + coeffs[1]*varx[iy + (Nx-3)*ldy] + coeffs[2]*varx[iy + (Nx-2)*ldy] + coeffs[3]*varx[iy + (1)*ldy] + coeffs[4]*varx[iy + (2)*ldy] + coeffs[5]*varx[iy + (3)*ldy];
+        dvardx[iy + 1*ldy] = coeffs[0]*varx[iy + (Nx-3)*ldy] + coeffs[1]*varx[iy + (Nx-2)*ldy] + coeffs[2]*varx[iy + (0)*ldy] + coeffs[3]*varx[iy + (2)*ldy] + coeffs[4]*varx[iy + (3)*ldy] + coeffs[5]*varx[iy + (4)*ldy];
+        dvardx[iy + 2*ldy] = coeffs[0]*varx[iy +  (Nx-2)*ldy] + coeffs[1]*varx[iy + (0)*ldy] + coeffs[2]*varx[iy + (1)*ldy] + coeffs[3]*varx[iy + (3)*ldy] + coeffs[4]*varx[iy + (4)*ldy] + coeffs[5]*varx[iy + (5)*ldy];
+        
+        // Right most points
+        dvardx[iy+(Nx-1)*ldy] = coeffs[0]*varx[iy + (Nx-4)*ldy] + coeffs[1]*varx[iy + (Nx-3)*ldy] + coeffs[2]*varx[iy + (Nx-2)*ldy] + coeffs[3]*varx[iy + (1)*ldy] + coeffs[4]*varx[iy + (2)*ldy] + coeffs[5]*varx[iy + (3)*ldy];
+        dvardx[iy+(Nx-2)*ldy] = coeffs[0]*varx[iy + (Nx-5)*ldy] + coeffs[1]*varx[iy + (Nx-4)*ldy] + coeffs[2]*varx[iy + (Nx-3)*ldy] + coeffs[3]*varx[iy + (Nx-1)*ldy] + coeffs[4]*varx[iy + (1)*ldy] + coeffs[5]*varx[iy + (2)*ldy];
+        dvardx[iy+(Nx-3)*ldy] = coeffs[0]*varx[iy + (Nx-6)*ldy] + coeffs[1]*varx[iy + (Nx-5)*ldy] + coeffs[2]*varx[iy + (Nx-4)*ldy] + coeffs[3]*varx[iy + (Nx-2)*ldy] + coeffs[4]*varx[iy + (Nx-1)*ldy] + coeffs[5]*varx[iy + (1)*ldy];
+    
+        // Inner points
+        for (int ix = 3; ix<Nx-3; ix++){
+            dvardx[iy+ldy*ix] = coeffs[0]*varx[iy + (ix-3)*ldy] + coeffs[1]*varx[iy + (ix-2)*ldy] + coeffs[2]*varx[iy + (ix-1)*ldy] + coeffs[3]*varx[iy + (ix+1)*ldy] + coeffs[4]*varx[iy + (ix+2)*ldy] + coeffs[5]*varx[iy + (ix+3)*ldy];
+        }
+    }
+        
+    // Y - DERIVATVES
+    
+    for (int ix = 0; ix < cols; ix++){
+        // Boundary points for iy <3 and iy > Nx-3
+        
+        // Top points
+        dvardy[0+ix*ldy] = coeffs[0]*vary[ix*ldy + Ny-4] + coeffs[1]*vary[ix*ldy + Ny -3] + coeffs[2]*vary[ix*ldy + Ny-2] + coeffs[3]*vary[ix*ldy+1] + coeffs[4]*vary[ix*ldy+2] + coeffs[5]*vary[ix*ldy+3];
+        dvardy[1+ix*ldy] = coeffs[0]*vary[ix*ldy + Ny-3] + coeffs[1]*vary[ix*ldy + Ny -2] + coeffs[2]*vary[ix*ldy + 0] + coeffs[3]*vary[ix*ldy+2] + coeffs[4]*vary[ix*ldy+3] + coeffs[5]*vary[ix*ldy+4];
+        dvardy[2+ix*ldy] = coeffs[0]*vary[ix*ldy + Ny-2] + coeffs[1]*vary[ix*ldy + 0] + coeffs[2]*vary[ix*ldy + 1] + coeffs[3]*vary[ix*ldy+3] + coeffs[4]*vary[ix*ldy+4] + coeffs[5]*vary[ix*ldy+5];
+        
+        
+        // Bottom points
+        dvardy[Ny-1+ix*ldy] = coeffs[0]*vary[ix*ldy + Ny-4] + coeffs[1]*vary[ix*ldy + Ny -3] + coeffs[2]*vary[ix*ldy + Ny-2] + coeffs[3]*vary[ix*ldy+1] + coeffs[4]*vary[ix*ldy +2] + coeffs[5]*vary[ix*ldy +3];
+        dvardy[Ny-2+ix*ldy] = coeffs[0]*vary[ix*ldy + Ny-5] + coeffs[1]*vary[ix*ldy + Ny -4] + coeffs[2]*vary[ix*ldy + Ny-3] + coeffs[3]*vary[ix*ldy+Ny-1] + coeffs[4]*vary[ix*ldy +1] + coeffs[5]*vary[ix*ldy +2];
+        dvardy[Ny-3+ix*ldy] = coeffs[0]*vary[ix*ldy + Ny-6] + coeffs[1]*vary[ix*ldy + Ny -5] + coeffs[2]*vary[ix*ldy + Ny-4] + coeffs[3]*vary[ix*ldy+Ny-2] + coeffs[4]*vary[ix*ldy + Ny-1] + coeffs[5]*vary[ix*ldy + 1];
+        
+        // Inner points
+        for (int iy = 3; iy<Ny-3; iy++){
+            dvardy[iy+ldy*ix] = coeffs[0]*vary[iy-3 + ix*ldy] + coeffs[1]*vary[iy -2 + ix*ldy] + coeffs[2]*vary[iy -1 + ix*ldy] + coeffs[3]*vary[iy + 1 + ix*ldy] + coeffs[4]*vary[iy + 2 + ix*ldy] + coeffs[5]*vary[iy + 3 + ix*ldy];
+        }
+    }
+}
+
+void ShallowWater::TimeIntegrateForLoop(){
+    std::cout << std::setprecision(16) << std::fixed;
+    std::string str;
+    
+    double* kutemp = new double[Nx*Ny];
+    double* kvtemp = new double[Nx*Ny];
+    double* khtemp = new double[Nx*Ny];    
+    
+    double* unew = new double[Nx*Ny];
+    double* vnew = new double[Nx*Ny];
+    double* hnew = new double[Nx*Ny];
+    
+    double* dhdx = new double[Nx*Ny];
+    double* dudx = new double[Nx*Ny];
+    double* dvdx = new double[Nx*Ny];
+
+    double* dhdy = new double[Nx*Ny];
+    double* dudy = new double[Nx*Ny];
+    double* dvdy = new double[Nx*Ny];
+
+    double* ku = new double[Nx*Ny];
+    double* kv = new double[Nx*Ny];
+    double* kh = new double[Nx*Ny];
+    
+    double coeffs[6] = {-0.016667, 0.15, -0.75, 0.75, -0.15, 0.016667};
+
+    // Start integration loop 
+    double t = dt;
+    while (t < T + dt/2){
+        
+        // Calculate k1 and propagate Snew
+        GetDerivativesForLoop(u, dudx, dudy, coeffs);
+        GetDerivativesForLoop(v, dvdx, dvdy, coeffs);
+        GetDerivativesForLoop(h, dhdx, dhdy, coeffs);
+
+        for (int node = 0; node < Nx*Ny; node++){
+            ku[node] = -u[node]*dudx[node] - v[node]*dudy[node] - g*dhdx[node];
+            unew[node] = u[node] + dt/6 * ku[node];
+            
+            kv[node] =  -u[node]*dvdx[node] - v[node]*dvdy[node] - g*dhdy[node];
+            vnew[node] = v[node] + dt/6 * kv[node];
+            
+            kh[node] = -h[node]*dudx[node] - u[node]*dhdx[node] - h[node]*dvdy[node] - v[node]*dhdy[node];
+            hnew[node] = h[node] + dt/6 * kh[node];
+            
+            u[node] += dt/2*ku[node];
+            v[node] += dt/2*kv[node];
+            h[node] += dt/2*kh[node];
+        }            
+        
+        // Calculate k2 and propagate Snew
+        GetDerivativesForLoop(u, dudx, dudy, coeffs);
+        GetDerivativesForLoop(v, dvdx, dvdy, coeffs);
+        GetDerivativesForLoop(h, dhdx, dhdy, coeffs);
+        
+        for (int node = 0; node < Nx*Ny; node++){
+            kutemp[node] = ku[node];
+            ku[node] = -u[node]*dudx[node] - v[node]*dudy[node] - g*dhdx[node];
+            unew[node] += dt/3 * ku[node];
+            
+            kvtemp[node] = kv[node];
+            kv[node] =  -u[node]*dvdx[node] - v[node]*dvdy[node] - g*dhdy[node];
+            vnew[node] += dt/3 * kv[node];
+            
+            khtemp[node] = kh[node];
+            kh[node] = -h[node]*dudx[node] - u[node]*dhdx[node] - h[node]*dvdy[node] - v[node]*dhdy[node];
+            hnew[node] += dt/3 * kh[node];
+            
+            u[node] += dt/2*ku[node] - dt/2*kutemp[node];
+            v[node] += dt/2*kv[node] - dt/2*kvtemp[node];
+            h[node] += dt/2*kh[node] - dt/2*khtemp[node];
+        }
+        
+        // Calculate k3 and propagate Snew
+        GetDerivativesForLoop(u, dudx, dudy, coeffs);
+        GetDerivativesForLoop(v, dvdx, dvdy, coeffs);
+        GetDerivativesForLoop(h, dhdx, dhdy, coeffs);
+        
+        for (int node = 0; node < Nx*Ny; node++){
+            kutemp[node] = ku[node];
+            ku[node] = -u[node]*dudx[node] - v[node]*dudy[node] - g*dhdx[node];
+            unew[node] += dt/3 * ku[node];
+            
+            kvtemp[node] = kv[node];
+            kv[node] =  -u[node]*dvdx[node] - v[node]*dvdy[node] - g*dhdy[node];
+            vnew[node] += dt/3 * kv[node];
+            
+            khtemp[node] = kh[node];
+            kh[node] = -h[node]*dudx[node] - u[node]*dhdx[node] - h[node]*dvdy[node] - v[node]*dhdy[node];
+            hnew[node] +=dt/3 * kh[node];
+            
+            u[node] += dt*ku[node] - dt/2*kutemp[node];
+            v[node] += dt*kv[node] - dt/2*kvtemp[node];
+            h[node] += dt*kh[node] - dt/2*khtemp[node];
+        }
+        
+        // Calculate k4 and propagate Snew
+        GetDerivativesForLoop(u, dudx, dudy, coeffs);
+        GetDerivativesForLoop(v, dvdx, dvdy, coeffs);
+        GetDerivativesForLoop(h, dhdx, dhdy, coeffs);
+        
+        for (int node = 0; node < Nx*Ny; node++){
+            ku[node] = -u[node]*dudx[node] - v[node]*dudy[node] - g*dhdx[node];
+            kv[node] =  -u[node]*dvdx[node] - v[node]*dvdy[node] - g*dhdy[node];
+            kh[node] = -h[node]*dudx[node] - u[node]*dhdx[node] - h[node]*dvdy[node] - v[node]*dhdy[node];
+            
+            u[node] = unew[node] + dt/6 * ku[node];
+            v[node] = vnew[node] + dt/6 * kv[node];
+            h[node] = hnew[node] + dt/6 * kh[node];
+        }
+        std::cout << std::string(str.length(),'\b');
+        str = "Time: " + std::to_string(t) + ". " + std::to_string((int) ((t)/dt)) + " time steps done out of " + std::to_string((int) (T/dt)) + ".";
+        std::cout << str;
+        
+        t += dt; 
     }
     
     delete[] kutemp;

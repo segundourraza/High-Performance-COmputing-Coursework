@@ -66,7 +66,8 @@ int main(int argc, char* argv[])
     }
     else if (analysis == 2){
         std::cout << "FOR LOOP IMPLEMENTATION SELECTED" << std::endl;
-        sol1.TimeIntegrateForLoop();
+//        sol1.TimeIntegrateForLoop();
+        sol1.TimeIntegrateParallel();
     }
     
     sol1.WriteFile();
