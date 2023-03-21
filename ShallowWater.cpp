@@ -154,78 +154,77 @@ void ShallowWater::TimeIntegrateParallel(){
             remainder_row = Ny%NumThreads;
             local_row = (Ny - remainder_row)/NumThreads;
             
-            std::cout << "\nNumber of threads = " << NumThreads << std::endl;
-            std::cout << "Number of columns = " << Nx << std::endl;
-            std::cout << "Number of rows = " << Ny << std::endl;
-            std::cout << "\nRemainding columns  = " << remainder_col << std::endl;
-            std::cout << "Columns per thread = " << local_col << std::endl;
-            std::cout << remainder_col << " threads must do an additional column." << std::endl;
-            std::cout << "Total columns = " << (local_col*(NumThreads-remainder_col) +  (local_col +1)*remainder_col) << "\n" << std::endl;
-            std::cout << "\nRemainding rows  = " << remainder_row << std::endl;
-            std::cout << "Rows per thread = " << local_row << std::endl;
-            std::cout << remainder_row << " threads must do an additional column." << std::endl;
-            std::cout << "Total columns = " << (local_row*(NumThreads-remainder_row) +  (local_row +1)*remainder_row) << "\n" << std::endl;
+            std::cout << "\t" << "Number of threads:\t" <<"\t" << NumThreads << "\n" << std::endl;
+//            std::cout << "\nNumber of threads = " << NumThreads << std::endl;
+//            std::cout << "Number of columns = " << Nx << std::endl;
+//            std::cout << "Number of rows = " << Ny << std::endl;
+//            std::cout << "\nRemainding columns  = " << remainder_col << std::endl;
+//            std::cout << "Columns per thread = " << local_col << std::endl;
+//            std::cout << remainder_col << " threads must do an additional column." << std::endl;
+//            std::cout << "Total columns = " << (local_col*(NumThreads-remainder_col) +  (local_col +1)*remainder_col) << "\n" << std::endl;
+//            std::cout << "\nRemainding rows  = " << remainder_row << std::endl;
+//            std::cout << "Rows per thread = " << local_row << std::endl;
+//            std::cout << remainder_row << " threads must do an additional column." << std::endl;
+//            std::cout << "Total columns = " << (local_row*(NumThreads-remainder_row) +  (local_row +1)*remainder_row) << "\n" << std::endl;
             
             // Populating initial pointer shifting array due to reaminder of columns
             cumsum_col = new int[NumThreads];
             additional_col = new int[NumThreads];
-            for (int i = 1 ; i < remainder_col+1; i++){
-                additional_col[i-1] = 1;
-                cumsum_col[i] = cumsum_col[i-1] + local_col + 1;
+            for (int i =0; i< NumThreads; i++){
+                cumsum_col[i] = i*local_col;
+                additional_col[i] = 0;
+            }
+            if ( remainder_col != 0) {
+                for (int i = 1 ; i < remainder_col+1; i++){
+                    additional_col[i-1] = 1;
+                    cumsum_col[i] = cumsum_col[i-1] + local_col + 1;
+                }
+                for (int i = remainder_col+1; i<NumThreads; i++){
+                    cumsum_col[i] = cumsum_col[i-1] + local_col;
+                }
             }
             
-            for (int i = remainder_col+1; i<NumThreads; i++){
-                cumsum_col[i] = cumsum_col[i-1] + local_col;
-                additional_col[i-1] = 0;
-            }
             
-            
-            
-            for (int i = 0; i<NumThreads; i++){
-                std::cout << cumsum_col[i] << ",\t" ;
-            }
-            std::cout << std::endl;
-            for (int i = 0; i<NumThreads; i++){
-                std::cout << additional_col[i] << ",\t" ;
-            }
-            std::cout << std::endl;
-            std::cout << std::endl;
+//            for (int i = 0; i<NumThreads; i++){
+//                std::cout << cumsum_col[i] << ",\t" ;
+//            }
+//            std::cout << std::endl;
+//            for (int i = 0; i<NumThreads; i++){
+//                std::cout << additional_col[i] << ",\t" ;
+//            }
+//            std::cout << std::endl;
+//            std::cout << std::endl;
             
             
             
             // Same for rows
             cumsum_row = new int[NumThreads];
             additional_row = new int[NumThreads];
-            for (int i = 1 ; i < remainder_col+1; i++){
-                additional_row[i-1] = 1;
-                cumsum_row[i] = cumsum_row[i-1] + local_row + 1;
+            for (int i =0; i< NumThreads; i++){
+                cumsum_row[i] = i*local_row;
+                additional_row[i] = 0;
             }
-            
-            for (int i = remainder_col+1; i<NumThreads; i++){
-                cumsum_row[i] = cumsum_row[i-1] + local_row;
-                additional_row[i-1] = 0;
+            if ( remainder_row != 0) {
+                for (int i = 1 ; i < remainder_row+1; i++){
+                    additional_row[i-1] = 1;
+                    cumsum_row[i] = cumsum_row[i-1] + local_row + 1;
+                }
+                for (int i = remainder_row+1; i<NumThreads; i++){
+                    cumsum_row[i] = cumsum_row[i-1] + local_row;
+                }
             }
-            
-            for (int i = 0; i<NumThreads; i++){
-                std::cout << cumsum_row[i] << ",\t" ;
-            }
-            std::cout << std::endl;for (int i = 0; i<NumThreads; i++){
-                std::cout << additional_row[i] << ",\t" ;
-            }
-            std::cout << std::endl;
-            std::cout << std::endl;
         }
         #pragma omp barrier
         
         // Start integration loop 
         double t = dt;
         while (t < T + dt/2){
-            #pragma omp critical
-            {
-            std::cout << "THREAD #" << threadid << ": STARTING COLUMN VALUE OF h = " << h[(cumsum_col[threadid])*Ny] << std::endl;
-            std::cout << "THREAD #" << threadid << ": STARTING ROW VALUE OF h = " << h[(cumsum_row[threadid])] << std::endl;
-            std::cout << std::endl;
-            }
+//            #pragma omp critical
+//            {
+//            std::cout << "THREAD #" << threadid << ": STARTING COLUMN VALUE OF h = " << h[(cumsum_col[threadid])*Ny] << std::endl;
+//            std::cout << "THREAD #" << threadid << ": STARTING ROW VALUE OF h = " << h[(cumsum_row[threadid])] << std::endl;
+//            std::cout << std::endl;
+//            }
             
             // Calculate k1 and propagate Snew
             GetDerivativesParallel(local_row+additional_row[threadid], local_col + additional_col[threadid], u + (cumsum_row[threadid]),u + (cumsum_col[threadid])*Ny,  dudx + (cumsum_row[threadid]), dudy + (cumsum_col[threadid])*Ny, coeffs);
@@ -301,7 +300,6 @@ void ShallowWater::TimeIntegrateParallel(){
                 v[node] += dt*kv[node] - dt/2*kvtemp[node];
                 h[node] += dt*kh[node] - dt/2*khtemp[node];
             }
-            
             #pragma omp barrier
             
             // Calculate k3 and propagate Snew
@@ -320,18 +318,23 @@ void ShallowWater::TimeIntegrateParallel(){
                 v[node] = vnew[node] + dt/6 * kv[node];
                 h[node] = hnew[node] + dt/6 * kh[node];
             }
+            #pragma omp barrier
             
-            std::cout << std::string(str.length(),'\b');
-            str = "Time: " + std::to_string(t) + ". " + std::to_string((int) ((t)/dt)) + " time steps done out of " + std::to_string((int) (T/dt)) + ".";
-            std::cout << str;
-            
+            #pragma omp critical
+            if (threadid == 0){
+                std::cout << std::string(str.length(),'\b');
+                str = "Time: " + std::to_string(t) + ". " + std::to_string((int) ((t)/dt)) + " time steps done out of " + std::to_string((int) (T/dt)) + ".";
+                std::cout << str;
+            }
             t+=dt;
         }
     }
-
-    std::cout << "FINISHED TIME LOOP"<< std::endl;
-
     
+    delete[] cumsum_col;
+    delete[] additional_col;
+    delete[] cumsum_row;
+    delete[] additional_row;
+            
     delete[] kutemp;
     delete[] kvtemp;
     delete[] khtemp;
@@ -649,8 +652,9 @@ void ShallowWater::TimeIntegrate(){
             S[i] = Snew[i] + RK4coeffs[3]*k2[i];
         }
         
+
         std::cout << std::string(str.length(),'\b');
-        str = "Time: " + std::to_string(t) + ". " + std::to_string((int) (t/dt)) + " time steps done out of " + std::to_string((int) (T/dt)) + ".\n";
+        str = "Time: " + std::to_string(t) + ". " + std::to_string((int) ((t)/dt)) + " time steps done out of " + std::to_string((int) (T/dt)) + ".";
         std::cout << str;
         t += dt;
     }  
@@ -827,7 +831,7 @@ void ShallowWater::WriteFile(){
             myfile << ix*dx << "\t" << iy*dy << "\t" << u[iy+ix*Ny] << "\t" << v[iy+ix*Ny] << "\t" << h[iy+ix*Ny] << "\n"; 
         }
     }
-    std::cout << "\nWriting output to file.\n" << std::endl;
+    std::cout << "\n\nWriting output to file." << std::endl;
     myfile.close();
     
 }

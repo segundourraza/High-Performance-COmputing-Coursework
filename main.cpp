@@ -1,7 +1,8 @@
 #include <iostream>
 #include <iomanip>
 #include <boost/program_options.hpp>
-#include <boost/timer/timer.hpp>
+//#include <boost/timer/timer.hpp>
+#include <chrono>
 
 #include "ShallowWater.h"
 
@@ -33,51 +34,56 @@ int main(int argc, char* argv[])
     const int Nx        = vm["Nx"].as<int>();
     const int Ny        = vm["Ny"].as<int>();
     const int ic         = vm["ic"].as<double>();
-
-
+    int analysis = 1; // [1] - BLAS analysis, [2] - for based analysis
     
-//    const double dt     = 0.1;
-//    const double T      = 5;
-//    const int Nx        = 11;
-//    const int Ny        = 11;
-//    const int ic         = 1;
-    int analysis = 2; // [1] - BLAS analysis, [2] - for based analysis
     // Fixed parameters
     double dx = 1.;
     double dy = 1.; 
     
+    // Start timing
+    auto start = std::chrono::high_resolution_clock::now();
+    
     // Testing class ShallowWater
     ShallowWater sol1(dt, T, Nx, Ny, ic, dx, dy, analysis);
-//    ShallowWater sol1;
-    sol1.sayHello();
+    std::cout << "\nSIMUALTION PARAMETERS:" << std::endl;
+    std::cout << "\t" << "Time-step:\t" << "\t" <<  "\t" <<  sol1.getTimeStep() << std::endl;
+    std::cout << "\t" << "Total integration time:\t" << "\t" << sol1.getIntegrationTime() << std::endl;
+    std::cout << "\t" << "Number of grid points in x:\t" << sol1.getNx() << std::endl;
+    std::cout << "\t" << "Number of grid points in y:\t" << sol1.getNy() << std::endl;
+    std::cout << "\t" << "Spatial step in x:\t" << "\t" <<  dx << std::endl;
+    std::cout << "\t" << "Spatial step in y:\t" << "\t" <<  dy << std::endl;
+    std::cout << "\t" << "Initial condition index:\t" << sol1.getIc() << std::endl;
     
-    std::cout << "\nTime-step: " << sol1.getTimeStep() << std::endl;
-    std::cout << "Total integration time: " << sol1.getIntegrationTime() << std::endl;
-    std::cout << "Number of grid points in x = " << sol1.getNx() << std::endl;
-    std::cout << "Number of grid points in y = " << sol1.getNy() << std::endl;
-    std::cout << "Initial condition index = " << sol1.getIc() << std::endl;
-    std::cout << std::endl;
     
     sol1.SetInitialCondition(); 
     
     if (analysis == 1){
-        std::cout << "BLAS IMPLEMENTATION SELECTED" << std::endl;
+        std::cout << "\t" << "Implemenatation mode:\t\tBLAS" << std::endl;
         sol1.TimeIntegrate();    
     }
     else if (analysis == 2){
-        std::cout << "FOR LOOP IMPLEMENTATION SELECTED" << std::endl;
+        std::cout << "\t" << "Implemenatation mode:\t\t" << "FOR LOOP" << std::endl;
 //        sol1.TimeIntegrateForLoop();
         sol1.TimeIntegrateParallel();
     }
     
     sol1.WriteFile();
     
+    auto stop = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
+    
+    
+    
     
     int y1 = 88;
     int x1 = 26;
     int y2 = 26;
     int x2 = 21;
-    std::cout << std::setprecision (16) << std::fixed << "h[" << y1 << "," << x1 << "] = " << *(sol1.geth() + y1 +Ny*(x1)) << std::endl;
-    std::cout << std::setprecision (16) << std::fixed << "h[" << y2 << "," << x2 << "] = " << *(sol1.geth() + y2 +Ny*x2) << std::endl;
+    
+    std::cout << "\nSIMUALTION RESULTS:" << std::endl;
+    std::cout << "\t" << "Time taken:\t" <<  duration.count() << " ms" << std::endl;
+    std::cout << "\t" << std::setprecision (16) << std::fixed << "h[" << y1 << "," << x1 << "] = " << "\t" <<*(sol1.geth() + y1 +Ny*(x1)) << std::endl;
+    std::cout << "\t" << std::setprecision (16) << std::fixed << "h[" << y2 << "," << x2 << "] = " << "\t" <<*(sol1.geth() + y2 +Ny*x2) << std::endl;
+    
     return 0;
 }
