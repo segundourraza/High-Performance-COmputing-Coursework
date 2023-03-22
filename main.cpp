@@ -72,9 +72,6 @@ int main(int argc, char* argv[])
     auto stop = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
     
-    
-    
-    
     int y1 = 88;
     int x1 = 26;
     int y2 = 26;
