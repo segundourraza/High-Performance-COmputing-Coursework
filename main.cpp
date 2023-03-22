@@ -18,8 +18,9 @@ int main(int argc, char* argv[])
         ("T", po::value<double>()->default_value(5.0), "Total integration time.")
         ("Nx", po::value<int>()->default_value(100), "Number of grid points in x.")
         ("Ny", po::value<int>()->default_value(100), "Number of grid points in y.")
-        ("ic", po::value<double>()->default_value(1), "Index of the initial condition to use (1-4).");
-
+        ("ic", po::value<double>()->default_value(1), "Index of the initial condition to use (1-4).")
+        ("mode", po::value<int>()->default_value(2), "Analysis mode. [1] - BLAS analysis, [2] - for based analysis");
+        
     po::variables_map vm;
     po::store(po::parse_command_line(argc, argv, opts), vm);
     po::notify(vm);
@@ -33,8 +34,8 @@ int main(int argc, char* argv[])
     const double T      = vm["T"].as<double>();
     const int Nx        = vm["Nx"].as<int>();
     const int Ny        = vm["Ny"].as<int>();
-    const int ic         = vm["ic"].as<double>();
-    int analysis = 1; // [1] - BLAS analysis, [2] - for based analysis
+    const int ic        = vm["ic"].as<double>();
+    int analysis        = vm["mode"].as<int>();; // [1] - BLAS analysis, [2] - for based analysis
     
     // Fixed parameters
     double dx = 1.;
@@ -53,7 +54,6 @@ int main(int argc, char* argv[])
     std::cout << "\t" << "Spatial step in x:\t" << "\t" <<  dx << std::endl;
     std::cout << "\t" << "Spatial step in y:\t" << "\t" <<  dy << std::endl;
     std::cout << "\t" << "Initial condition index:\t" << sol1.getIc() << std::endl;
-    
     
     sol1.SetInitialCondition(); 
     

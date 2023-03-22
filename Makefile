@@ -36,6 +36,11 @@ validation3: $(TARGET)
 
 validation4: $(TARGET)
 	./$(TARGET) --dt 0.1 --T 20 --Nx 100 --Ny 100 --ic 4
+
+profiler1: $(TARGET)
+	collect -o test1.er make test1	
+	analyzer test1.er
+
 .PHONY: clean
 	
 clean: 
