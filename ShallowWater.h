@@ -20,10 +20,6 @@ class ShallowWater
     double* u = nullptr;
     double* v = nullptr;
     
-    
-    double* B = new double[5*3*Ny*Nx];
-    double* C = new double[3*3*Ny*Nx];
-    
     void PopulateA(const int& N, double* A, const int& lda, const double* coeffs);
     void ConstructSVector(double* S);
     
@@ -34,8 +30,8 @@ class ShallowWater
     
     void ApplyPeriodicBC(const int& Nx, const double* S, const int& ldx, double* dSdx, double* dSdy, const double* coeffs); 
     
-    void EvaluateFuncBlasV3(const int& kla, const int& kua, const double* A, const int& lday, double* S, const int& ldsy, const double* coeffs, double* k);
-    void EvaluateFuncBlasV2(const int& kl, const int& ku, const double* A, const int& lday, double* S, const int& ldsy, const double* coeffs, double* k);
+    void EvaluateFuncBlasV3(const int& kla, const int& kua, const double* A, const int& lday, double* S, const int& ldsy, const double* coeffs, double* k, double* dSdx, double* dSdy, double* B, double* C);
+    void EvaluateFuncBlasV2(const int& kla, const int& kua, const double* A, const int& lday, double* S, const int& ldsy, const double* coeffs, double* k, double* B, double* C);
     void EvaluateFuncBlas(const int& dimS, double* S, const double* dSdx, const double* dSdy, double* k);
     
 public:

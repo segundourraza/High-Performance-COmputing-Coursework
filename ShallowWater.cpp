@@ -99,6 +99,8 @@ void ShallowWater::PrintMatrix(const int& N, const double* A, const int& lday, c
     }
 }
 
+
+
 void ShallowWater::TimeIntegrateParallel(){
     std::cout << std::setprecision(16) << std::fixed;
     std::string str;
@@ -153,17 +155,6 @@ void ShallowWater::TimeIntegrateParallel(){
             local_row = (Ny - remainder_row)/NumThreads;
             
             std::cout << "\t" << "Number of threads:\t" <<"\t" << NumThreads << "\n" << std::endl;
-//            std::cout << "\nNumber of threads = " << NumThreads << std::endl;
-//            std::cout << "Number of columns = " << Nx << std::endl;
-//            std::cout << "Number of rows = " << Ny << std::endl;
-//            std::cout << "\nRemainding columns  = " << remainder_col << std::endl;
-//            std::cout << "Columns per thread = " << local_col << std::endl;
-//            std::cout << remainder_col << " threads must do an additional column." << std::endl;
-//            std::cout << "Total columns = " << (local_col*(NumThreads-remainder_col) +  (local_col +1)*remainder_col) << "\n" << std::endl;
-//            std::cout << "\nRemainding rows  = " << remainder_row << std::endl;
-//            std::cout << "Rows per thread = " << local_row << std::endl;
-//            std::cout << remainder_row << " threads must do an additional column." << std::endl;
-//            std::cout << "Total columns = " << (local_row*(NumThreads-remainder_row) +  (local_row +1)*remainder_row) << "\n" << std::endl;
             
             // Populating initial pointer shifting array due to reaminder of columns
             cumsum_col = new int[NumThreads];
@@ -181,19 +172,6 @@ void ShallowWater::TimeIntegrateParallel(){
                     cumsum_col[i] = cumsum_col[i-1] + local_col;
                 }
             }
-            
-            
-//            for (int i = 0; i<NumThreads; i++){
-//                std::cout << cumsum_col[i] << ",\t" ;
-//            }
-//            std::cout << std::endl;
-//            for (int i = 0; i<NumThreads; i++){
-//                std::cout << additional_col[i] << ",\t" ;
-//            }
-//            std::cout << std::endl;
-//            std::cout << std::endl;
-            
-            
             
             // Same for rows
             cumsum_row = new int[NumThreads];
@@ -217,13 +195,6 @@ void ShallowWater::TimeIntegrateParallel(){
         // Start integration loop 
         double t = dt;
         while (t < T + dt/2){
-//            #pragma omp critical
-//            {
-//            std::cout << "THREAD #" << threadid << ": STARTING COLUMN VALUE OF h = " << h[(cumsum_col[threadid])*Ny] << std::endl;
-//            std::cout << "THREAD #" << threadid << ": STARTING ROW VALUE OF h = " << h[(cumsum_row[threadid])] << std::endl;
-//            std::cout << std::endl;
-//            }
-            
             // Calculate k1 and propagate Snew
             GetDerivativesParallel(local_row+additional_row[threadid], local_col + additional_col[threadid], u + (cumsum_row[threadid]),u + (cumsum_col[threadid])*Ny,  dudx + (cumsum_row[threadid]), dudy + (cumsum_col[threadid])*Ny, coeffs);
             GetDerivativesParallel(local_row+additional_row[threadid], local_col + additional_col[threadid], v + (cumsum_row[threadid]),v + (cumsum_col[threadid])*Ny,  dvdx + (cumsum_row[threadid]), dvdy + (cumsum_col[threadid])*Ny, coeffs);
@@ -607,17 +578,17 @@ void ShallowWater::GetDerivativesBLASV2(const double* S, double* dSdx, double* d
         dSdx[iy+(Nx-3)*ldy] = coeffs[0]*S[iy + (Nx-6)*ldy] + coeffs[1]*S[iy + (Nx-5)*ldy] + coeffs[2]*S[iy + (Nx-4)*ldy] + coeffs[3]*S[iy + (Nx-2)*ldy] + coeffs[4]*S[iy + (Nx-1)*ldy] + coeffs[5]*S[iy + (1)*ldy];
     
         // Inner points
-//        for (int ix = 3; ix<Nx-3; ix++){
-//            dSdx[iy+ldy*ix] = coeffs[0]*S[iy + (ix-3)*ldy] + coeffs[1]*S[iy + (ix-2)*ldy] + coeffs[2]*S[iy + (ix-1)*ldy] + coeffs[3]*S[iy + (ix+1)*ldy] + coeffs[4]*S[iy + (ix+2)*ldy] + coeffs[5]*S[iy + (ix+3)*ldy];
-//        }
-        
-        int counter = 3*ldy+iy;
-        int ldy2 = 2*ldy;
-        int ldy3 = 3*ldy;
         for (int ix = 3; ix<Nx-3; ix++){
-            dSdx[counter] = coeffs[0]*S[counter-ldy3] + coeffs[1]*S[counter-ldy2] + coeffs[2]*S[counter-ldy] + coeffs[3]*S[counter+ldy] + coeffs[4]*S[counter+ldy2] + coeffs[5]*S[counter+ldy3];
-            counter += ldy;
+            dSdx[iy+ldy*ix] = coeffs[0]*S[iy + (ix-3)*ldy] + coeffs[1]*S[iy + (ix-2)*ldy] + coeffs[2]*S[iy + (ix-1)*ldy] + coeffs[3]*S[iy + (ix+1)*ldy] + coeffs[4]*S[iy + (ix+2)*ldy] + coeffs[5]*S[iy + (ix+3)*ldy];
         }
+        
+//        int counter = 3*ldy+iy;
+//        int ldy2 = 2*ldy;
+//        int ldy3 = 3*ldy;
+//        for (int ix = 3; ix<Nx-3; ix++){
+//            dSdx[counter] = coeffs[0]*S[counter-ldy3] + coeffs[1]*S[counter-ldy2] + coeffs[2]*S[counter-ldy] + coeffs[3]*S[counter+ldy] + coeffs[4]*S[counter+ldy2] + coeffs[5]*S[counter+ldy3];
+//            counter += ldy;
+//        }
     }
     
 //    PrintMatrix(Nx, S+2, 3*Ny, 3);
@@ -698,9 +669,6 @@ void ShallowWater::TimeIntegrate(){
     
     std::string str;
     
-    B = new double[5*3*Ny*Nx];
-    C = new double[3*3*Nx*Ny];
-    
     // Populate Differentiation matrix (Only Required by BLAS implementation)
     int ldsy = 3*Ny;
     int dimS = ldsy*Nx;
@@ -710,10 +678,15 @@ void ShallowWater::TimeIntegrate(){
     
     // Initialize variables
     double* A = new double[lday*Nx];
+    double* B = new double[5*3*Ny*Nx];
+    double* C = new double[3*3*Ny*Nx];
+    
     double* S = new double[dimS];
     double* Snew = new double[dimS];
     double* k2 = new double[dimS];
     double* k1 = new double[dimS];
+    double* dSdx = new double[dimS];
+    double* dSdy = new double[dimS];
     
     double coeffs[6] = {-0.016667, 0.15, -0.75, 0.75, -0.15, 0.016667};
     double RK4coeffs[4] = {dt/6, dt/3, dt/3, dt/6};
@@ -731,7 +704,7 @@ void ShallowWater::TimeIntegrate(){
         
         // Calculate k1 and propagate Snew
 //        EvaluateFuncBlasV2(kl, ku, A, lday, S, ldsy, coeffs, k1);
-        EvaluateFuncBlasV3(kl, ku, A, lday, S, ldsy, coeffs, k1);
+        EvaluateFuncBlasV3(kl, ku, A, lday, S, ldsy, coeffs, k1, dSdx, dSdy, B, C);
 
         for (int i = 0; i<dimS; i++){
             Snew[i] = S[i] + RK4coeffs[0]*k1[i];
@@ -740,7 +713,7 @@ void ShallowWater::TimeIntegrate(){
             
         // Calculate k2 and propagate Snew
 //        EvaluateFuncBlasV2(kl, ku, A, lday, S, ldsy, coeffs, k2);
-        EvaluateFuncBlasV3(kl, ku, A, lday, S, ldsy, coeffs, k2);
+        EvaluateFuncBlasV3(kl, ku, A, lday, S, ldsy, coeffs, k2, dSdx, dSdy, B, C);
     
 
         for (int i = 0; i<dimS; i++){
@@ -751,7 +724,7 @@ void ShallowWater::TimeIntegrate(){
 //    PrintMatrix(3*Ny, C, 3, 1);
         // Calculate k3 and propagate Snew
 //        EvaluateFuncBlasV2(kl, ku, A, lday, S, ldsy, coeffs, k1);
-        EvaluateFuncBlasV3(kl, ku, A, lday, S, ldsy, coeffs, k1);
+        EvaluateFuncBlasV3(kl, ku, A, lday, S, ldsy, coeffs, k1, dSdx, dSdy, B, C);
 
         for (int i = 0; i<dimS; i++){
             Snew[i] += RK4coeffs[2]*k1[i];
@@ -762,7 +735,7 @@ void ShallowWater::TimeIntegrate(){
         
         // Calculate k4 and update S for next iteration
 //        EvaluateFuncBlasV2(kl, ku, A, lday, S, ldsy, coeffs, k2);
-         EvaluateFuncBlasV3(kl, ku, A, lday, S, ldsy, coeffs, k2);
+         EvaluateFuncBlasV3(kl, ku, A, lday, S, ldsy, coeffs, k2, dSdx, dSdy, B, C);
          
         for (int i = 0; i<dimS; i++){
             S[i] = Snew[i] + RK4coeffs[3]*k2[i];
@@ -781,18 +754,22 @@ void ShallowWater::TimeIntegrate(){
         h[i/3] = S[i+2];
     }    
     
+    delete[] A;
     delete[] B;
     delete[] C;
+    delete[] S;
+    delete[] Snew;
+    delete[] k2;
+    delete[] k1;
+    delete[] dSdx;
+    delete[] dSdy;
+    
+    
 }
 
-void ShallowWater::EvaluateFuncBlasV3(const int& kla, const int& kua, const double* A, const int& lday, double* S, const int& ldsy, const double* coeffs, double* k){
+void ShallowWater::EvaluateFuncBlasV3(const int& kla, const int& kua, const double* A, const int& lday, double* S, const int& ldsy, const double* coeffs, double* k, double* dSdx, double* dSdy, double* B, double* C){
     // k = F(S) = - B*d(S)/dx - C*d(S)/dy
     int dimS = ldsy*Nx;
-    
-    double* dSdx = new double[dimS];
-    double* dSdy = new double[dimS];
-    
-
             
     // Step 1: Evaluate derivatives of State S
     GetDerivativesBLASV2(S, dSdx, dSdy, coeffs);
@@ -827,27 +804,9 @@ void ShallowWater::EvaluateFuncBlasV3(const int& kla, const int& kua, const doub
     // Step 5: Evaluate value of function f(S)
     cblas_dgbmv(CblasColMajor, CblasNoTrans, dimS, dimS, kl, ku, -1.0, C, ldy, dSdy, 1, 1.0, k, 1);
     k[dimS - 2] = - (S[dimS-3+1]* dSdy[dimS-3+1] + g * dSdy[dimS-1]);
-      
-//            std::cout << std::endl;        
-//            PrintMatrix(Nx, k, 3*Ny, 1);
-//            std::cout << S[dimS-3+1]* dSdy[dimS-3+1] + g * dSdy[dimS-1];
-//            PrintMatrix(3*Ny, C, ldy, 1);
-//            std::cout << std::endl;
-//            std::cout << std::endl;
-//            std::cout << std::endl;
-//    
-//    std::cout << std::endl;        
-//            PrintMatrix(Nx, k, 3*Ny, 1);
-////            PrintMatrix(3*Ny, C, ldy, 1);
-//            std::cout << std::endl;
-//            std::cout << std::endl;
-//            std::cout << std::endl;
-//    
-    delete[] dSdx;
-    delete[] dSdy;
 }
 
-void ShallowWater::EvaluateFuncBlasV2(const int& kla, const int& kua, const double* A, const int& lday, double* S, const int& ldsy, const double* coeffs, double* k){
+void ShallowWater::EvaluateFuncBlasV2(const int& kla, const int& kua, const double* A, const int& lday, double* S, const int& ldsy, const double* coeffs, double* k, double* B, double* C){
     // k = F(S) = - B*d(S)/dx - C*d(S)/dy
     int dimS = ldsy*Nx;
     
