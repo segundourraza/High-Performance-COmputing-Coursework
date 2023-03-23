@@ -99,8 +99,6 @@ void ShallowWater::PrintMatrix(const int& N, const double* A, const int& lday, c
     }
 }
 
-
-
 void ShallowWater::TimeIntegrateParallel(){
     std::cout << std::setprecision(16) << std::fixed;
     std::string str;
@@ -118,6 +116,11 @@ void ShallowWater::TimeIntegrateParallel(){
     int* additional_col = nullptr;
     int* additional_row = nullptr;
     
+
+    double* ku = new double[Nx*Ny];
+    double* kv = new double[Nx*Ny];
+    double* kh = new double[Nx*Ny];
+    
     double* kutemp = new double[Nx*Ny];
     double* kvtemp = new double[Nx*Ny];
     double* khtemp = new double[Nx*Ny];    
@@ -133,10 +136,6 @@ void ShallowWater::TimeIntegrateParallel(){
     double* dhdy = new double[Nx*Ny];
     double* dudy = new double[Nx*Ny];
     double* dvdy = new double[Nx*Ny];
-
-    double* ku = new double[Nx*Ny];
-    double* kv = new double[Nx*Ny];
-    double* kh = new double[Nx*Ny];
     
     double coeffs[6] = {-0.016667, 0.15, -0.75, 0.75, -0.15, 0.016667};
     
@@ -578,24 +577,19 @@ void ShallowWater::GetDerivativesBLASV2(const double* S, double* dSdx, double* d
         dSdx[iy+(Nx-3)*ldy] = coeffs[0]*S[iy + (Nx-6)*ldy] + coeffs[1]*S[iy + (Nx-5)*ldy] + coeffs[2]*S[iy + (Nx-4)*ldy] + coeffs[3]*S[iy + (Nx-2)*ldy] + coeffs[4]*S[iy + (Nx-1)*ldy] + coeffs[5]*S[iy + (1)*ldy];
     
         // Inner points
-        for (int ix = 3; ix<Nx-3; ix++){
-            dSdx[iy+ldy*ix] = coeffs[0]*S[iy + (ix-3)*ldy] + coeffs[1]*S[iy + (ix-2)*ldy] + coeffs[2]*S[iy + (ix-1)*ldy] + coeffs[3]*S[iy + (ix+1)*ldy] + coeffs[4]*S[iy + (ix+2)*ldy] + coeffs[5]*S[iy + (ix+3)*ldy];
-        }
-        
-//        int counter = 3*ldy+iy;
-//        int ldy2 = 2*ldy;
-//        int ldy3 = 3*ldy;
 //        for (int ix = 3; ix<Nx-3; ix++){
-//            dSdx[counter] = coeffs[0]*S[counter-ldy3] + coeffs[1]*S[counter-ldy2] + coeffs[2]*S[counter-ldy] + coeffs[3]*S[counter+ldy] + coeffs[4]*S[counter+ldy2] + coeffs[5]*S[counter+ldy3];
-//            counter += ldy;
+//            dSdx[iy+ldy*ix] = coeffs[0]*S[iy + (ix-3)*ldy] + coeffs[1]*S[iy + (ix-2)*ldy] + coeffs[2]*S[iy + (ix-1)*ldy] + coeffs[3]*S[iy + (ix+1)*ldy] + coeffs[4]*S[iy + (ix+2)*ldy] + coeffs[5]*S[iy + (ix+3)*ldy];
 //        }
+//        
+        int counter = 3*ldy+iy;
+        int ldy2 = 2*ldy;
+        int ldy3 = 3*ldy;
+        for (int ix = 3; ix<Nx-3; ix++){
+            dSdx[counter] = coeffs[0]*S[counter-ldy3] + coeffs[1]*S[counter-ldy2] + coeffs[2]*S[counter-ldy] + coeffs[3]*S[counter+ldy] + coeffs[4]*S[counter+ldy2] + coeffs[5]*S[counter+ldy3];
+            counter += ldy;
+        }
     }
-    
-//    PrintMatrix(Nx, S+2, 3*Ny, 3);
-//    std::cout << std::endl;
-//    std::cout << std::endl;
-//    std::cout << std::endl;
-//            
+            
     // Y - DERIVATVES
     for (int ix = 0; ix < Nx; ix++){
         // Boundary points for iy <3 and iy > Nx-3
@@ -614,6 +608,11 @@ void ShallowWater::GetDerivativesBLASV2(const double* S, double* dSdx, double* d
             for (int iy = 9; iy<3*Ny-9; iy+=3){
                 dSdy[iy + i +ldy*ix] = coeffs[0]*S[iy + i - 9 + ix*ldy] + coeffs[1]*S[iy + i - 6 + ix*ldy] + coeffs[2]*S[iy + i - 3 + ix*ldy] + coeffs[3]*S[iy + i + 3+  ix*ldy] + coeffs[4]*S[iy + i + 6+ ix*ldy] + coeffs[5]*S[iy + i + 9 + ix*ldy];
             }
+//            
+//            int counter = ldy*ix;
+//            for (int iy = 9; iy<3*Ny-9; iy+=3){
+//                dSdy[iy + i +counter] = coeffs[0]*S[iy + i - 9 + counter] + coeffs[1]*S[iy + i - 6 + counter] + coeffs[2]*S[iy + i - 3 + counter] + coeffs[3]*S[iy + i + 3+  counter] + coeffs[4]*S[iy + i + 6+ counter] + coeffs[5]*S[iy + i + 9 + counter];
+//            }
         }
     }
     
@@ -626,11 +625,13 @@ void ShallowWater::GetDerivativesBlas(const int& kl, const int& ku, const double
         cblas_dgbmv(CblasColMajor, CblasNoTrans, Ny, Nx, kl, ku, 1/dx, A, lday, S+iy, ldsy, 0.0, dSdx + iy, ldsy);
     }
     
+    int col = 0;
     // Iterate over columns
     for (int ix = 0 ; ix < Nx; ix ++ ){
-        cblas_dgbmv(CblasColMajor, CblasNoTrans, Ny, Nx, kl, ku, 1/dy, A, lday, S + ix*ldsy, 3, 0.0, dSdy+ix*ldsy, 3);
-        cblas_dgbmv(CblasColMajor, CblasNoTrans, Ny, Nx, kl, ku, 1/dy, A, lday, S + 1 + ix*ldsy, 3, 0.0, dSdy + 1 + ix*ldsy, 3);
-        cblas_dgbmv(CblasColMajor, CblasNoTrans, Ny, Nx, kl, ku, 1/dy, A, lday, S + 2 + ix*ldsy, 3, 0.0, dSdy + 2 + ix*ldsy, 3);
+        col = ix*ldsy;
+        cblas_dgbmv(CblasColMajor, CblasNoTrans, Ny, Nx, kl, ku, 1/dy, A, lday, S + col, 3, 0.0, dSdy+col, 3);
+        cblas_dgbmv(CblasColMajor, CblasNoTrans, Ny, Nx, kl, ku, 1/dy, A, lday, S + 1 + col, 3, 0.0, dSdy + 1 + col, 3);
+        cblas_dgbmv(CblasColMajor, CblasNoTrans, Ny, Nx, kl, ku, 1/dy, A, lday, S + 2 + col, 3, 0.0, dSdy + 2 + col, 3);
     }
     
     ShallowWater::ApplyPeriodicBC(Nx, S, ldsy, dSdx, dSdy, coeffs);    
@@ -654,13 +655,13 @@ void ShallowWater::ApplyPeriodicBC(const int& Nx, const double* S, const int& ld
     // Loop over columns
     for (int ix = 0; ix< Nx; ix++){
         for (int j = 0; j<3; j++){
-        dSdy[ix*ldsy+j] += coeffs[2]*S[(ix+1)*ldsy-3+j] + coeffs[1]*S[(ix+1)*ldsy-6+j] + coeffs[0]*S[(ix+1)*ldsy-9+j];
-        dSdy[ix*ldsy+3+j] += coeffs[1]*S[(ix+1)*ldsy-3+j] + coeffs[0]*S[(ix+1)*ldsy-6+j];
-        dSdy[ix*ldsy+6+j] += coeffs[0]*S[(ix+1)*ldsy-3+j];
+        dSdy[ix*ldsy+j] += coeffs[2]*S[(ix+1)*ldsy-6+j] + coeffs[1]*S[(ix+1)*ldsy-9+j] + coeffs[0]*S[(ix+1)*ldsy-12+j];
+        dSdy[ix*ldsy+3+j] += coeffs[1]*S[(ix+1)*ldsy-6+j] + coeffs[0]*S[(ix+1)*ldsy-9+j];
+        dSdy[ix*ldsy+6+j] += coeffs[0]*S[(ix+1)*ldsy-6+j];
         
-        dSdy[(ix+1)*ldsy -3+j] += coeffs[3]*S[ix*ldsy+j] + coeffs[4]*S[ix*ldsy+3+j] + coeffs[5]*S[ix*ldsy +6+j];
-        dSdy[(ix+1)*ldsy -6+j] += coeffs[4]*S[ix*ldsy+j] + coeffs[5]*S[ix*ldsy+3+j];
-        dSdy[(ix+1)*ldsy -9+j] += coeffs[5]*S[ix*ldsy+j];
+        dSdy[(ix+1)*ldsy -3+j] += coeffs[3]*S[ix*ldsy+3+j] + coeffs[4]*S[ix*ldsy+6+j] + coeffs[5]*S[ix*ldsy +9+j];
+        dSdy[(ix+1)*ldsy -6+j] += coeffs[4]*S[ix*ldsy+3+j] + coeffs[5]*S[ix*ldsy+6+j];
+        dSdy[(ix+1)*ldsy -9+j] += coeffs[5]*S[ix*ldsy+3+j];
         }
     }
 }
@@ -703,16 +704,15 @@ void ShallowWater::TimeIntegrate(){
     while (t < T + dt/2){
         
         // Calculate k1 and propagate Snew
-//        EvaluateFuncBlasV2(kl, ku, A, lday, S, ldsy, coeffs, k1);
+//        EvaluateFuncBlasV2(kl, ku, A, lday, S, ldsy, coeffs, k1, B, C);
         EvaluateFuncBlasV3(kl, ku, A, lday, S, ldsy, coeffs, k1, dSdx, dSdy, B, C);
 
         for (int i = 0; i<dimS; i++){
             Snew[i] = S[i] + RK4coeffs[0]*k1[i];
             S[i] += kcoeffs[0]*k1[i];
         }
-            
         // Calculate k2 and propagate Snew
-//        EvaluateFuncBlasV2(kl, ku, A, lday, S, ldsy, coeffs, k2);
+//        EvaluateFuncBlasV2(kl, ku, A, lday, S, ldsy, coeffs, k2, B, C);
         EvaluateFuncBlasV3(kl, ku, A, lday, S, ldsy, coeffs, k2, dSdx, dSdy, B, C);
     
 
@@ -721,9 +721,8 @@ void ShallowWater::TimeIntegrate(){
             S[i] += kcoeffs[1]*k2[i] -kcoeffs[0]*k1[i];
         }
        
-//    PrintMatrix(3*Ny, C, 3, 1);
         // Calculate k3 and propagate Snew
-//        EvaluateFuncBlasV2(kl, ku, A, lday, S, ldsy, coeffs, k1);
+//        EvaluateFuncBlasV2(kl, ku, A, lday, S, ldsy, coeffs, k1, B, C);
         EvaluateFuncBlasV3(kl, ku, A, lday, S, ldsy, coeffs, k1, dSdx, dSdy, B, C);
 
         for (int i = 0; i<dimS; i++){
@@ -734,7 +733,7 @@ void ShallowWater::TimeIntegrate(){
             
         
         // Calculate k4 and update S for next iteration
-//        EvaluateFuncBlasV2(kl, ku, A, lday, S, ldsy, coeffs, k2);
+//        EvaluateFuncBlasV2(kl, ku, A, lday, S, ldsy, coeffs, k2, B, C);
          EvaluateFuncBlasV3(kl, ku, A, lday, S, ldsy, coeffs, k2, dSdx, dSdy, B, C);
          
         for (int i = 0; i<dimS; i++){
@@ -800,7 +799,6 @@ void ShallowWater::EvaluateFuncBlasV3(const int& kla, const int& kua, const doub
         if (i<dimS-1){C[(i+2)*ldy-1] = S[i+2];}
     } 
     
-    
     // Step 5: Evaluate value of function f(S)
     cblas_dgbmv(CblasColMajor, CblasNoTrans, dimS, dimS, kl, ku, -1.0, C, ldy, dSdy, 1, 1.0, k, 1);
     k[dimS - 2] = - (S[dimS-3+1]* dSdy[dimS-3+1] + g * dSdy[dimS-1]);
@@ -844,6 +842,7 @@ void ShallowWater::EvaluateFuncBlasV2(const int& kla, const int& kua, const doub
     
     // Step 5: Evaluate value of function f(S)
     cblas_dgbmv(CblasColMajor, CblasNoTrans, dimS, dimS, kl, ku, -1.0, C, ldy, dSdy, 1, 1.0, k, 1);
+    k[dimS - 2] = - (S[dimS-3+1]* dSdy[dimS-3+1] + g * dSdy[dimS-1]);
     
     delete[] dSdx;
     delete[] dSdy;

@@ -34,6 +34,7 @@ class ShallowWater
     void EvaluateFuncBlasV2(const int& kla, const int& kua, const double* A, const int& lday, double* S, const int& ldsy, const double* coeffs, double* k, double* B, double* C);
     void EvaluateFuncBlas(const int& dimS, double* S, const double* dSdx, const double* dSdy, double* k);
     
+    
 public:
     // Constructors
     ShallowWater(); // Default Constructorn declaration
