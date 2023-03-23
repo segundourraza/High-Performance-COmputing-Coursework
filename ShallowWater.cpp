@@ -566,24 +566,20 @@ void ShallowWater::GetDerivativesBLASV2(const double* S, double* dSdx, double* d
     for (int iy = 0; iy < ldy; iy++){
         // Boundary points for ix <3 and ix > Nx-3
         
-        // Left most points
-        dSdx[iy] = coeffs[0]*S[iy + (Nx-4)*ldy] + coeffs[1]*S[iy + (Nx-3)*ldy] + coeffs[2]*S[iy + (Nx-2)*ldy] + coeffs[3]*S[iy + (1)*ldy] + coeffs[4]*S[iy + (2)*ldy] + coeffs[5]*S[iy + (3)*ldy];
-        dSdx[iy + 1*ldy] = coeffs[0]*S[iy + (Nx-3)*ldy] + coeffs[1]*S[iy + (Nx-2)*ldy] + coeffs[2]*S[iy + (0)*ldy] + coeffs[3]*S[iy + (2)*ldy] + coeffs[4]*S[iy + (3)*ldy] + coeffs[5]*S[iy + (4)*ldy];
-        dSdx[iy + 2*ldy] = coeffs[0]*S[iy +  (Nx-2)*ldy] + coeffs[1]*S[iy + (0)*ldy] + coeffs[2]*S[iy + (1)*ldy] + coeffs[3]*S[iy + (3)*ldy] + coeffs[4]*S[iy + (4)*ldy] + coeffs[5]*S[iy + (5)*ldy];
-        
-        // Right most points
-        dSdx[iy+(Nx-1)*ldy] = coeffs[0]*S[iy + (Nx-4)*ldy] + coeffs[1]*S[iy + (Nx-3)*ldy] + coeffs[2]*S[iy + (Nx-2)*ldy] + coeffs[3]*S[iy + (1)*ldy] + coeffs[4]*S[iy + (2)*ldy] + coeffs[5]*S[iy + (3)*ldy];
-        dSdx[iy+(Nx-2)*ldy] = coeffs[0]*S[iy + (Nx-5)*ldy] + coeffs[1]*S[iy + (Nx-4)*ldy] + coeffs[2]*S[iy + (Nx-3)*ldy] + coeffs[3]*S[iy + (Nx-1)*ldy] + coeffs[4]*S[iy + (1)*ldy] + coeffs[5]*S[iy + (2)*ldy];
-        dSdx[iy+(Nx-3)*ldy] = coeffs[0]*S[iy + (Nx-6)*ldy] + coeffs[1]*S[iy + (Nx-5)*ldy] + coeffs[2]*S[iy + (Nx-4)*ldy] + coeffs[3]*S[iy + (Nx-2)*ldy] + coeffs[4]*S[iy + (Nx-1)*ldy] + coeffs[5]*S[iy + (1)*ldy];
-    
-        // Inner points
-//        for (int ix = 3; ix<Nx-3; ix++){
-//            dSdx[iy+ldy*ix] = coeffs[0]*S[iy + (ix-3)*ldy] + coeffs[1]*S[iy + (ix-2)*ldy] + coeffs[2]*S[iy + (ix-1)*ldy] + coeffs[3]*S[iy + (ix+1)*ldy] + coeffs[4]*S[iy + (ix+2)*ldy] + coeffs[5]*S[iy + (ix+3)*ldy];
-//        }
-//        
         int counter = 3*ldy+iy;
         int ldy2 = 2*ldy;
-        int ldy3 = 3*ldy;
+        int ldy3 = 3*ldy;    
+        
+        // Left most points
+        dSdx[iy] = coeffs[0]*S[iy + (Nx-4)*ldy] + coeffs[1]*S[iy + (Nx-3)*ldy] + coeffs[2]*S[iy + (Nx-2)*ldy] + coeffs[3]*S[iy + ldy] + coeffs[4]*S[iy + ldy2] + coeffs[5]*S[iy + ldy3];
+        dSdx[iy + ldy] = coeffs[0]*S[iy + (Nx-3)*ldy] + coeffs[1]*S[iy + (Nx-2)*ldy] + coeffs[2]*S[iy] + coeffs[3]*S[iy + ldy2] + coeffs[4]*S[iy + ldy3] + coeffs[5]*S[iy + ldy3 + ldy];
+        dSdx[iy + ldy2] = coeffs[0]*S[iy +  (Nx-2)*ldy] + coeffs[1]*S[iy] + coeffs[2]*S[iy + ldy] + coeffs[3]*S[iy + ldy3] + coeffs[4]*S[iy + ldy3+ldy] + coeffs[5]*S[iy + ldy2 + ldy3];
+        
+        // Right most points
+        dSdx[iy+(Nx-1)*ldy] = coeffs[0]*S[iy + (Nx-4)*ldy] + coeffs[1]*S[iy + (Nx-3)*ldy] + coeffs[2]*S[iy + (Nx-2)*ldy] + coeffs[3]*S[iy + ldy] + coeffs[4]*S[iy + ldy2] + coeffs[5]*S[iy + ldy3];
+        dSdx[iy+(Nx-2)*ldy] = coeffs[0]*S[iy + (Nx-5)*ldy] + coeffs[1]*S[iy + (Nx-4)*ldy] + coeffs[2]*S[iy + (Nx-3)*ldy] + coeffs[3]*S[iy + (Nx-1)*ldy] + coeffs[4]*S[iy + ldy] + coeffs[5]*S[iy + ldy2];
+        dSdx[iy+(Nx-3)*ldy] = coeffs[0]*S[iy + (Nx-6)*ldy] + coeffs[1]*S[iy + (Nx-5)*ldy] + coeffs[2]*S[iy + (Nx-4)*ldy] + coeffs[3]*S[iy + (Nx-2)*ldy] + coeffs[4]*S[iy + (Nx-1)*ldy] + coeffs[5]*S[iy + ldy];
+    
         for (int ix = 3; ix<Nx-3; ix++){
             dSdx[counter] = coeffs[0]*S[counter-ldy3] + coeffs[1]*S[counter-ldy2] + coeffs[2]*S[counter-ldy] + coeffs[3]*S[counter+ldy] + coeffs[4]*S[counter+ldy2] + coeffs[5]*S[counter+ldy3];
             counter += ldy;
@@ -594,25 +590,21 @@ void ShallowWater::GetDerivativesBLASV2(const double* S, double* dSdx, double* d
     for (int ix = 0; ix < Nx; ix++){
         // Boundary points for iy <3 and iy > Nx-3
         for (int i =  0; i < 3; i++){
+            int counter = ldy*ix;
             // Top points
-            dSdy[0 + i + ix*ldy] = coeffs[0]*S[ix*ldy + ldy - 12 + i] + coeffs[1]*S[ix*ldy + ldy -9 + i] + coeffs[2]*S[ix*ldy + ldy -6 + i] + coeffs[3]*S[ix*ldy + 3 + i] + coeffs[4]*S[ix*ldy + 6 + i] + coeffs[5]*S[ix*ldy + 9 + i];
-            dSdy[3 + i + ix*ldy] = coeffs[0]*S[ix*ldy + ldy - 9 + i] + coeffs[1]*S[ix*ldy + ldy - 6 + i] + coeffs[2]*S[ix*ldy + i] + coeffs[3]*S[ix*ldy + 6 + i] + coeffs[4]*S[ix*ldy + 9 + i] + coeffs[5]*S[ix*ldy + 12 + i];
-            dSdy[6 + i + ix*ldy] = coeffs[0]*S[ix*ldy + ldy - 6 + i] + coeffs[1]*S[ix*ldy + i] + coeffs[2]*S[ix*ldy + 3 + i] + coeffs[3]*S[ix*ldy + 9 + i] + coeffs[4]*S[ix*ldy + 12 + i] + coeffs[5]*S[ix*ldy + 15 + i];
+            dSdy[0 + i + counter] = coeffs[0]*S[counter + ldy - 12 + i] + coeffs[1]*S[counter + ldy -9 + i] + coeffs[2]*S[counter + ldy -6 + i] + coeffs[3]*S[counter + 3 + i] + coeffs[4]*S[counter + 6 + i] + coeffs[5]*S[counter + 9 + i];
+            dSdy[3 + i + counter] = coeffs[0]*S[counter + ldy - 9 + i] + coeffs[1]*S[counter + ldy - 6 + i] + coeffs[2]*S[counter + i] + coeffs[3]*S[counter + 6 + i] + coeffs[4]*S[counter + 9 + i] + coeffs[5]*S[counter + 12 + i];
+            dSdy[6 + i + counter] = coeffs[0]*S[counter + ldy - 6 + i] + coeffs[1]*S[counter + i] + coeffs[2]*S[counter + 3 + i] + coeffs[3]*S[counter + 9 + i] + coeffs[4]*S[counter + 12 + i] + coeffs[5]*S[counter + 15 + i];
             
             // Bottom points
-            dSdy[ldy - 3 + i+ix*ldy] = coeffs[0]*S[ix*ldy + ldy - 12 + i] + coeffs[1]*S[ix*ldy + ldy - 9 + i] + coeffs[2]*S[ix*ldy + ldy - 6 + i] + coeffs[3]*S[ix*ldy + 3 + i] + coeffs[4]*S[ix*ldy + 6 + i] + coeffs[5]*S[ix*ldy + 9 + i];
-            dSdy[ldy - 6 + i+ix*ldy] = coeffs[0]*S[ix*ldy + ldy - 15 + i] + coeffs[1]*S[ix*ldy + ldy - 12 + i] + coeffs[2]*S[ix*ldy + ldy - 9 + i] + coeffs[3]*S[ix*ldy + ldy - 3 + i] + coeffs[4]*S[ix*ldy + 3 + i] + coeffs[5]*S[ix*ldy + 6 + i];
-            dSdy[ldy - 9 + i+ix*ldy] = coeffs[0]*S[ix*ldy + ldy - 18 + i] + coeffs[1]*S[ix*ldy + ldy - 15 + i] + coeffs[2]*S[ix*ldy + ldy - 12 + i] + coeffs[3]*S[ix*ldy + ldy - 6 + i] + coeffs[4]*S[ix*ldy + ldy  - 3 + i] + coeffs[5]*S[ix*ldy + 3 + i];
+            dSdy[ldy - 3 + i+counter] = coeffs[0]*S[counter + ldy - 12 + i] + coeffs[1]*S[counter + ldy - 9 + i] + coeffs[2]*S[counter + ldy - 6 + i] + coeffs[3]*S[counter + 3 + i] + coeffs[4]*S[counter + 6 + i] + coeffs[5]*S[counter + 9 + i];
+            dSdy[ldy - 6 + i+counter] = coeffs[0]*S[counter + ldy - 15 + i] + coeffs[1]*S[counter + ldy - 12 + i] + coeffs[2]*S[counter + ldy - 9 + i] + coeffs[3]*S[counter + ldy - 3 + i] + coeffs[4]*S[counter + 3 + i] + coeffs[5]*S[counter + 6 + i];
+            dSdy[ldy - 9 + i+counter] = coeffs[0]*S[counter + ldy - 18 + i] + coeffs[1]*S[counter + ldy - 15 + i] + coeffs[2]*S[counter + ldy - 12 + i] + coeffs[3]*S[counter + ldy - 6 + i] + coeffs[4]*S[counter + ldy  - 3 + i] + coeffs[5]*S[counter + 3 + i];
             
             // Inner points
             for (int iy = 9; iy<3*Ny-9; iy+=3){
-                dSdy[iy + i +ldy*ix] = coeffs[0]*S[iy + i - 9 + ix*ldy] + coeffs[1]*S[iy + i - 6 + ix*ldy] + coeffs[2]*S[iy + i - 3 + ix*ldy] + coeffs[3]*S[iy + i + 3+  ix*ldy] + coeffs[4]*S[iy + i + 6+ ix*ldy] + coeffs[5]*S[iy + i + 9 + ix*ldy];
+                dSdy[iy + i +counter] = coeffs[0]*S[iy + i - 9 + counter] + coeffs[1]*S[iy + i - 6 + counter] + coeffs[2]*S[iy + i - 3 + counter] + coeffs[3]*S[iy + i + 3+  counter] + coeffs[4]*S[iy + i + 6+ counter] + coeffs[5]*S[iy + i + 9 + counter];
             }
-//            
-//            int counter = ldy*ix;
-//            for (int iy = 9; iy<3*Ny-9; iy+=3){
-//                dSdy[iy + i +counter] = coeffs[0]*S[iy + i - 9 + counter] + coeffs[1]*S[iy + i - 6 + counter] + coeffs[2]*S[iy + i - 3 + counter] + coeffs[3]*S[iy + i + 3+  counter] + coeffs[4]*S[iy + i + 6+ counter] + coeffs[5]*S[iy + i + 9 + counter];
-//            }
         }
     }
     
