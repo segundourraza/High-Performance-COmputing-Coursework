@@ -1,3 +1,443 @@
+commit 74f2e5c68ab0e7526ce0b711a49e9fd9fb5d2f65
+Author: Segundo Urraza Atue <su219@ic.ac.uk>
+Date:   Fri Mar 24 18:07:50 2023 +0000
+
+    Final commit
+
+M	Makefile
+M	Output.txt
+M	ShallowWater.o
+M	main
+M	main.o
+
+commit c380a5b6b06d2a56c8524a47f06a4c5b7bdf1a69
+Author: Segundo Urraza Atue <su219@ic.ac.uk>
+Date:   Fri Mar 24 12:38:12 2023 +0000
+
+    almost done
+
+M	Output.txt
+M	ShallowWater.cpp
+M	ShallowWater.h
+M	ShallowWater.o
+M	main
+M	main.cpp
+M	main.o
+
+commit cd24e507429930ef1bcc93bb3b6934a855124e0c
+Author: Segundo Urraza Atue <su219@ic.ac.uk>
+Date:   Thu Mar 23 18:02:23 2023 +0000
+
+    applying in-line operations optimization
+
+M	ShallowWater.cpp
+M	ShallowWater.o
+M	main
+M	main.o
+
+commit db8510f5a7a807cab4155bfcd5868c18368d3585
+Author: Segundo Urraza Atue <su219@ic.ac.uk>
+Date:   Thu Mar 23 16:08:40 2023 +0000
+
+    small changes
+
+M	Output.txt
+M	ShallowWater.cpp
+M	ShallowWater.h
+M	ShallowWater.o
+M	main
+
+commit 4a7b7e85af019abe3b8239a77dcfccae07f96f4f
+Author: Segundo Urraza Atue <su219@ic.ac.uk>
+Date:   Wed Mar 22 13:13:38 2023 +0000
+
+    implemenetd 'mode' flag as command line argument to choose between for and blas implementations.
+
+M	Makefile
+M	Output.txt
+M	ShallowWater.cpp
+M	ShallowWater.h
+M	ShallowWater.o
+M	main
+M	main.cpp
+M	main.o
+
+commit 1fa069649c2385b8be0ea1e192cc5f1696cd4841
+Author: Segundo Urraza Atue <su219@ic.ac.uk>
+Date:   Wed Mar 22 12:43:18 2023 +0000
+
+    minot chnage
+
+M	main.cpp
+
+commit e3778997ff286d2b82c10efa17f2fcf16ab27787
+Author: Segundo Urraza Atue <su219@ic.ac.uk>
+Date:   Wed Mar 22 12:42:08 2023 +0000
+
+    Fully functional blas with for loop defferentiation method for parallelisation
+
+M	Makefile
+M	Output.txt
+M	ShallowWater.cpp
+M	ShallowWater.h
+M	ShallowWater.o
+M	main
+M	main.cpp
+M	main.o
+
+commit 208f537209c1b93e32785416910ae5108c29742d
+Author: Segundo Urraza Atue <su219@ic.ac.uk>
+Date:   Tue Mar 21 16:06:39 2023 +0000
+
+    Fully functional parallel version of code
+
+M	Output.txt
+M	ShallowWater.cpp
+M	ShallowWater.o
+M	main
+M	main.cpp
+M	main.o
+
+commit bdaab9fe9a0a7645c0ead24abdec7e88654a301e
+Author: Segundo Urraza Atue <su219@ic.ac.uk>
+Date:   Tue Mar 21 12:24:43 2023 +0000
+
+    parallelized code
+
+M	Output.txt
+M	ShallowWater.cpp
+M	ShallowWater.h
+M	ShallowWater.o
+M	main
+M	main.cpp
+M	main.o
+
+commit 4405421add42d491a5c186a90684865c65673995
+Author: Segundo Urraza Atue <su219@ic.ac.uk>
+Date:   Mon Mar 20 14:54:49 2023 +0000
+
+     will re-structure derivative function to make it more parallel friendly
+
+M	Makefile
+M	Output.txt
+M	ShallowWater.cpp
+M	ShallowWater.h
+M	ShallowWater.o
+M	main
+
+commit bad8e31b0a7a1a24d3f07432d310960802b97bb8
+Author: Segundo Urraza Atue <su219@ic.ac.uk>
+Date:   Mon Mar 20 11:49:56 2023 +0000
+
+    Started parallelizing the code
+
+M	Output.txt
+M	ShallowWater.cpp
+M	ShallowWater.h
+M	ShallowWater.o
+M	main
+D	test4.er/archives/ld-2.31.so_dnWuQRcLhw9
+D	test4.er/archives/libblas.so.3_6Oz7YH9pKOc
+D	test4.er/archives/libboost_program_options.so.1.74.0_dnWuQRcLhw9
+D	test4.er/archives/libc-2.31.so_dnWuQRcLhw9
+D	test4.er/archives/libcollector.so_kN_xj2QRtH5
+D	test4.er/archives/libdl-2.31.so_dnWuQRcLhw9
+D	test4.er/archives/libgcc_s.so.1_dnWuQRcLhw9
+D	test4.er/archives/libgfortran.so.5.0.0_dnWuQRcLhw9
+D	test4.er/archives/libm-2.31.so_dnWuQRcLhw9
+D	test4.er/archives/libopenblasp-r0.3.13.so_6Oz7YH9pKOc
+D	test4.er/archives/libpthread-2.31.so_dnWuQRcLhw9
+D	test4.er/archives/libquadmath.so.0.0.0_dnWuQRcLhw9
+D	test4.er/archives/librt-2.31.so_dnWuQRcLhw9
+D	test4.er/archives/libstdc++.so.6.0.28_dnWuQRcLhw9
+D	test4.er/archives/main_NgFHy6Lj1v5
+D	test4.er/data.frameinfo
+D	test4.er/dyntext
+D	test4.er/er_archive.log
+D	test4.er/jclasses
+D	test4.er/log.xml
+D	test4.er/map.xml
+D	test4.er/overview
+D	test4.er/profile
+D	test42.er/archives/ld-2.31.so_dnWuQRcLhw9
+D	test42.er/archives/libblas.so.3_6Oz7YH9pKOc
+D	test42.er/archives/libboost_program_options.so.1.74.0_dnWuQRcLhw9
+D	test42.er/archives/libc-2.31.so_dnWuQRcLhw9
+D	test42.er/archives/libcollector.so_kN_xj2QRtH5
+D	test42.er/archives/libdl-2.31.so_dnWuQRcLhw9
+D	test42.er/archives/libgcc_s.so.1_dnWuQRcLhw9
+D	test42.er/archives/libgfortran.so.5.0.0_dnWuQRcLhw9
+D	test42.er/archives/libm-2.31.so_dnWuQRcLhw9
+D	test42.er/archives/libopenblasp-r0.3.13.so_6Oz7YH9pKOc
+D	test42.er/archives/libpthread-2.31.so_dnWuQRcLhw9
+D	test42.er/archives/libquadmath.so.0.0.0_dnWuQRcLhw9
+D	test42.er/archives/librt-2.31.so_dnWuQRcLhw9
+D	test42.er/archives/libstdc++.so.6.0.28_dnWuQRcLhw9
+D	test42.er/archives/main_NgFHy6Lj1v5
+D	test42.er/data.frameinfo
+D	test42.er/dyntext
+D	test42.er/er_archive.log
+D	test42.er/jclasses
+D	test42.er/log.xml
+D	test42.er/map.xml
+D	test42.er/overview
+D	test42.er/profile
+D	test43.er/archives/ld-2.31.so_dnWuQRcLhw9
+D	test43.er/archives/libblas.so.3_6Oz7YH9pKOc
+D	test43.er/archives/libboost_program_options.so.1.74.0_dnWuQRcLhw9
+D	test43.er/archives/libc-2.31.so_dnWuQRcLhw9
+D	test43.er/archives/libcollector.so_kN_xj2QRtH5
+D	test43.er/archives/libdl-2.31.so_dnWuQRcLhw9
+D	test43.er/archives/libgcc_s.so.1_dnWuQRcLhw9
+D	test43.er/archives/libgfortran.so.5.0.0_dnWuQRcLhw9
+D	test43.er/archives/libm-2.31.so_dnWuQRcLhw9
+D	test43.er/archives/libopenblasp-r0.3.13.so_6Oz7YH9pKOc
+D	test43.er/archives/libpthread-2.31.so_dnWuQRcLhw9
+D	test43.er/archives/libquadmath.so.0.0.0_dnWuQRcLhw9
+D	test43.er/archives/librt-2.31.so_dnWuQRcLhw9
+D	test43.er/archives/libstdc++.so.6.0.28_dnWuQRcLhw9
+D	test43.er/archives/main_NgFHy6Lj1v5
+D	test43.er/data.frameinfo
+D	test43.er/dyntext
+D	test43.er/er_archive.log
+D	test43.er/jclasses
+D	test43.er/log.xml
+D	test43.er/map.xml
+D	test43.er/overview
+D	test43.er/profile
+
+commit 8d86fa28c7f20bc0ce2a90f9df83ce3d4db68e56
+Author: Segundo Urraza Atue <su219@ic.ac.uk>
+Date:   Sun Mar 19 15:12:48 2023 +0000
+
+    Version 2 complete. 4th Order accurate algorithm.
+
+M	Output.txt
+M	ShallowWater.cpp
+M	ShallowWater.h
+M	ShallowWater.o
+M	main
+M	main.o
+
+commit 5c5a6f0544f1c0bada3576afdc0b8270eb332bbe
+Author: Segundo Urraza Atue <su219@ic.ac.uk>
+Date:   Sun Mar 19 13:14:32 2023 +0000
+
+    inor changes
+
+M	ShallowWater.cpp
+
+commit 11905fde7722319dcd46fade742bf4fa6ab423ed
+Author: Segundo Urraza Atue <su219@ic.ac.uk>
+Date:   Sun Mar 19 13:04:11 2023 +0000
+
+    minor changes
+
+M	Output.txt
+M	ShallowWater.cpp
+M	ShallowWater.o
+M	main
+M	main.o
+
+commit acf9691aaec5c386573cd8f62ddbd7bd7b673679
+Merge: 016cc0a 653bdfc
+Author: Segundo Urraza Atue <su219@ic.ac.uk>
+Date:   Sun Mar 19 12:56:57 2023 +0000
+
+    Merged Version 1 into main branch
+
+commit 653bdfc44e84d57f37ca4a108fd9836ece6f85be
+Author: Segundo Urraza Atue <su219@ic.ac.uk>
+Date:   Sun Mar 19 12:42:13 2023 +0000
+
+    Version 1 fully functional. Merge with main branch
+
+M	Output.txt
+M	ShallowWater.cpp
+M	ShallowWater.o
+M	main
+
+commit 92588780681711fc6d1d58958407227079a3b8b9
+Author: Segundo Urraza Atue <su219@ic.ac.uk>
+Date:   Sun Mar 19 12:08:26 2023 +0000
+
+    Version 1
+
+M	.gitignore
+A	ShallowWater.h.gch
+
+commit 9a80c37abc4f9967562856539fa8df6546055e79
+Author: Segundo Urraza Atue <su219@ic.ac.uk>
+Date:   Sun Mar 19 12:07:13 2023 +0000
+
+    Version 1
+
+M	Output.txt
+M	ShallowWater.cpp
+M	ShallowWater.o
+M	main
+M	main.cpp
+M	main.o
+
+commit 016cc0a103ef23d7e83a5885097407e070aa6080
+Author: Segundo Urraza Atue <su219@ic.ac.uk>
+Date:   Sun Mar 19 11:38:47 2023 +0000
+
+    Adjusted the method used to calculate the derivatives
+
+M	.gitignore
+M	Output.txt
+M	ShallowWater.cpp
+M	ShallowWater.o
+M	main
+M	main.cpp
+M	main.o
+
+commit 88161845ca3f3dd9d58264a7deab747da63fdac8
+Author: Segundo Urraza Atue <su219@ic.ac.uk>
+Date:   Fri Mar 17 00:28:19 2023 +0000
+
+    add patches to code. Code is NOT 4th order accurate in time. LOOKING FOR PROBLEM
+
+M	Makefile
+M	Output.txt
+M	ShallowWater.cpp
+M	ShallowWater.o
+M	main
+M	main.cpp
+M	main.o
+A	output-test1-T20.txt
+A	output-test2-T20.txt
+A	output-test3-T20.txt
+A	output-test4-T20.txt
+A	test4.er/archives/ld-2.31.so_dnWuQRcLhw9
+A	test4.er/archives/libblas.so.3_6Oz7YH9pKOc
+A	test4.er/archives/libboost_program_options.so.1.74.0_dnWuQRcLhw9
+A	test4.er/archives/libc-2.31.so_dnWuQRcLhw9
+A	test4.er/archives/libcollector.so_kN_xj2QRtH5
+A	test4.er/archives/libdl-2.31.so_dnWuQRcLhw9
+A	test4.er/archives/libgcc_s.so.1_dnWuQRcLhw9
+A	test4.er/archives/libgfortran.so.5.0.0_dnWuQRcLhw9
+A	test4.er/archives/libm-2.31.so_dnWuQRcLhw9
+A	test4.er/archives/libopenblasp-r0.3.13.so_6Oz7YH9pKOc
+A	test4.er/archives/libpthread-2.31.so_dnWuQRcLhw9
+A	test4.er/archives/libquadmath.so.0.0.0_dnWuQRcLhw9
+A	test4.er/archives/librt-2.31.so_dnWuQRcLhw9
+A	test4.er/archives/libstdc++.so.6.0.28_dnWuQRcLhw9
+A	test4.er/archives/main_NgFHy6Lj1v5
+A	test4.er/data.frameinfo
+A	test4.er/dyntext
+A	test4.er/er_archive.log
+A	test4.er/jclasses
+A	test4.er/log.xml
+A	test4.er/map.xml
+A	test4.er/overview
+A	test4.er/profile
+A	test42.er/archives/ld-2.31.so_dnWuQRcLhw9
+A	test42.er/archives/libblas.so.3_6Oz7YH9pKOc
+A	test42.er/archives/libboost_program_options.so.1.74.0_dnWuQRcLhw9
+A	test42.er/archives/libc-2.31.so_dnWuQRcLhw9
+A	test42.er/archives/libcollector.so_kN_xj2QRtH5
+A	test42.er/archives/libdl-2.31.so_dnWuQRcLhw9
+A	test42.er/archives/libgcc_s.so.1_dnWuQRcLhw9
+A	test42.er/archives/libgfortran.so.5.0.0_dnWuQRcLhw9
+A	test42.er/archives/libm-2.31.so_dnWuQRcLhw9
+A	test42.er/archives/libopenblasp-r0.3.13.so_6Oz7YH9pKOc
+A	test42.er/archives/libpthread-2.31.so_dnWuQRcLhw9
+A	test42.er/archives/libquadmath.so.0.0.0_dnWuQRcLhw9
+A	test42.er/archives/librt-2.31.so_dnWuQRcLhw9
+A	test42.er/archives/libstdc++.so.6.0.28_dnWuQRcLhw9
+A	test42.er/archives/main_NgFHy6Lj1v5
+A	test42.er/data.frameinfo
+A	test42.er/dyntext
+A	test42.er/er_archive.log
+A	test42.er/jclasses
+A	test42.er/log.xml
+A	test42.er/map.xml
+A	test42.er/overview
+A	test42.er/profile
+A	test43.er/archives/ld-2.31.so_dnWuQRcLhw9
+A	test43.er/archives/libblas.so.3_6Oz7YH9pKOc
+A	test43.er/archives/libboost_program_options.so.1.74.0_dnWuQRcLhw9
+A	test43.er/archives/libc-2.31.so_dnWuQRcLhw9
+A	test43.er/archives/libcollector.so_kN_xj2QRtH5
+A	test43.er/archives/libdl-2.31.so_dnWuQRcLhw9
+A	test43.er/archives/libgcc_s.so.1_dnWuQRcLhw9
+A	test43.er/archives/libgfortran.so.5.0.0_dnWuQRcLhw9
+A	test43.er/archives/libm-2.31.so_dnWuQRcLhw9
+A	test43.er/archives/libopenblasp-r0.3.13.so_6Oz7YH9pKOc
+A	test43.er/archives/libpthread-2.31.so_dnWuQRcLhw9
+A	test43.er/archives/libquadmath.so.0.0.0_dnWuQRcLhw9
+A	test43.er/archives/librt-2.31.so_dnWuQRcLhw9
+A	test43.er/archives/libstdc++.so.6.0.28_dnWuQRcLhw9
+A	test43.er/archives/main_NgFHy6Lj1v5
+A	test43.er/data.frameinfo
+A	test43.er/dyntext
+A	test43.er/er_archive.log
+A	test43.er/jclasses
+A	test43.er/log.xml
+A	test43.er/map.xml
+A	test43.er/overview
+A	test43.er/profile
+
+commit 540445f780b95ad2014ac6e10063f6eaf0d9931f
+Author: Segundo Urraza Atue <su219@ic.ac.uk>
+Date:   Thu Mar 16 19:10:52 2023 +0000
+
+    First wroking version of for loop implementation of algorithm
+
+M	Makefile
+M	Output.txt
+M	ShallowWater.cpp
+M	ShallowWater.h
+M	ShallowWater.o
+M	main
+M	main.cpp
+M	main.o
+
+commit 8a6e1cdeaefe85ae4e1800eb75f68070c987bed5
+Author: Segundo Urraza Atue <su219@ic.ac.uk>
+Date:   Thu Mar 16 16:10:25 2023 +0000
+
+    Added function that calculates derivatives suing for loops
+
+M	Makefile
+A	Output.txt
+M	ShallowWater.cpp
+M	ShallowWater.h
+A	ShallowWater.o
+A	main
+M	main.cpp
+A	main.o
+
+commit 5bc05f8957938c56e9700a676b7be6c3b0756f37
+Author: Segundo Urraza Atue <su219@ic.ac.uk>
+Date:   Thu Mar 16 13:29:06 2023 +0000
+
+    commit rest of files
+
+A	Makefile
+M	ShallowWater.cpp
+M	ShallowWater.h
+M	main.cpp
+A	repository.log
+
+commit 17a89f0258f1f05ff95fa495b39fc2488b38c1a0
+Author: Segundo Urraza Atue <su219@ic.ac.uk>
+Date:   Thu Mar 16 13:28:25 2023 +0000
+
+    modified gitignore
+
+M	.gitignore
+
+commit 4b65001062ee2ca08d20e4f1e932ab65b63f6896
+Author: Segundo Urraza Atue <su219@ic.ac.uk>
+Date:   Thu Mar 16 13:23:35 2023 +0000
+
+    added git ignore
+
+A	.gitignore
+
 commit f0c9b6add106f6f855aa010057b17371eb25ef5b
 Author: Segundo Urraza Atue <su219@ic.ac.uk>
 Date:   Wed Mar 15 21:26:39 2023 +0000

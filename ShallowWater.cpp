@@ -78,7 +78,7 @@ void ShallowWater::SetInitialCondition(){// ARRAY OF POINTER TO POINTER WILL BE 
 }
 
 
-void ShallowWater::TimeIntegrateParallel(){
+void ShallowWater::TimeIntegrate(){
     std::cout << std::setprecision(16) << std::fixed;
     std::string str;
     
@@ -312,7 +312,7 @@ void ShallowWater::TimeIntegrateParallel(){
             
 }
 
-void ShallowWater::TimeIntegrate(){ 
+void ShallowWater::TimeIntegrateBLAS(){ 
     
     std::string str;
     

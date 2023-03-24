@@ -36,8 +36,8 @@ public:
     void SetInitialCondition();
     void PrintMatrix(const int& N,  const double* A, const int& lda, const int& inc);
     void PrintVector(const int& N, const double* x, const int& inc);
+    void TimeIntegrateBLAS();
     void TimeIntegrate();
-    void TimeIntegrateParallel();
     void WriteFile();
     
     // 'Getter' functions

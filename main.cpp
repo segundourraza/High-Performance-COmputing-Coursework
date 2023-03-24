@@ -55,13 +55,13 @@ int main(int argc, char* argv[])
     sol1.SetInitialCondition(); 
     
     if (analysis == 1){
-        std::cout << "\t" << "Implemenatation mode:\t\tBLAS" << std::endl;
-        sol1.TimeIntegrate();    
+        std::cout << "\t" << "Implemenatation mode:\t\tBLAS\n" << std::endl;
+        sol1.TimeIntegrateBLAS();    
     }
     else if (analysis == 2){
         std::cout << "\t" << "Implemenatation mode:\t\t" << "FOR LOOP" << std::endl;
 //        sol1.TimeIntegrateForLoop();
-        sol1.TimeIntegrateParallel();
+        sol1.TimeIntegrate();
     }
     
     sol1.WriteFile();
