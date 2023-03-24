@@ -20,19 +20,10 @@ class ShallowWater
     double* u = nullptr;
     double* v = nullptr;
     
-    void PopulateA(const int& N, double* A, const int& lda, const double* coeffs);
     void ConstructSVector(double* S);
-    
-    void GetDerivativesBlas(const int& kl, const int& ku, const double* A, const int& lda, const double* S, const int& ldx, double* dSdx, double* dXdy, const double* coeffs);
     void GetDerivativesBLASV2(const double* S, double* dSdx, double* dSdy, const double* coeffs);
-    void GetDerivativesForLoop(const double* var, double* dvardx, double* dvardy, const double* coeffs);
     void GetDerivativesParallel(const int& rows, const int& cols, const double* varx, const double* vary,  double* dvardx, double* dvardy, const double* coeffs);
-    
-    void ApplyPeriodicBC(const int& Nx, const double* S, const int& ldx, double* dSdx, double* dSdy, const double* coeffs); 
-    
-    void EvaluateFuncBlasV3(const int& kla, const int& kua, const double* A, const int& lday, double* S, const int& ldsy, const double* coeffs, double* k, double* dSdx, double* dSdy, double* B, double* C);
-    void EvaluateFuncBlasV2(const int& kla, const int& kua, const double* A, const int& lday, double* S, const int& ldsy, const double* coeffs, double* k, double* B, double* C);
-    void EvaluateFuncBlas(const int& dimS, double* S, const double* dSdx, const double* dSdy, double* k);
+    void EvaluateFuncBlasV3(const int& kla, const int& kua, const int& lday, double* S, const int& ldsy, const double* coeffs, double* k, double* dSdx, double* dSdy, double* B, double* C);
     
     
 public:
@@ -46,7 +37,6 @@ public:
     void PrintMatrix(const int& N,  const double* A, const int& lda, const int& inc);
     void PrintVector(const int& N, const double* x, const int& inc);
     void TimeIntegrate();
-    void TimeIntegrateForLoop();
     void TimeIntegrateParallel();
     void WriteFile();
     

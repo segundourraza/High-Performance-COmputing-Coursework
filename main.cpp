@@ -41,9 +41,6 @@ int main(int argc, char* argv[])
     double dx = 1.;
     double dy = 1.; 
     
-    // Start timing
-    auto start = std::chrono::high_resolution_clock::now();
-    
     // Testing class ShallowWater
     ShallowWater sol1(dt, T, Nx, Ny, ic, dx, dy, analysis);
     std::cout << "\nSIMUALTION PARAMETERS:" << std::endl;
@@ -69,16 +66,12 @@ int main(int argc, char* argv[])
     
     sol1.WriteFile();
     
-    auto stop = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
-    
     int y1 = 88;
     int x1 = 26;
     int y2 = 26;
     int x2 = 21;
     
     std::cout << "\nSIMUALTION RESULTS:" << std::endl;
-    std::cout << "\t" << "Time taken:\t" <<  duration.count() << " ms" << std::endl;
     std::cout << "\t" << std::setprecision (16) << std::fixed << "h[" << y1 << "," << x1 << "] = " << "\t" <<*(sol1.geth() + y1 +Ny*(x1)) << std::endl;
     std::cout << "\t" << std::setprecision (16) << std::fixed << "h[" << y2 << "," << x2 << "] = " << "\t" <<*(sol1.geth() + y2 +Ny*x2) << std::endl;
     
